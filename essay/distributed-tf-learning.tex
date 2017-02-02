@@ -1,20 +1,24 @@
-\documentclass[DIV=calc, paper=a4, fontsize=11pt, twocolumn]{scrartcl}	 % A4 paper and 11pt font size
+\documentclass[DIV=calc, paper=a4, fontsize=11pt]{scrartcl}	 % A4 paper and 11pt font size
+%\documentclass[DIV=calc, paper=a4, fontsize=11pt, twocolumn]{scrartcl}	 % A4 paper and 11pt font size
 
-\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
-\usepackage[italian]{babel} % English language/hyphenation
-\usepackage[protrusion=true,expansion=true]{microtype} % Better typography
-\usepackage{amsmath,amsfonts,amsthm} % Math packages
-\usepackage[svgnames]{xcolor} % Enabling colors by their 'svgnames'
-\usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
-\usepackage{booktabs} % Horizontal rules in tables
-\usepackage{fix-cm}	 % Custom font sizes - used for the initial letter in the document
+\usepackage{multicol}
+\usepackage{lipsum}
+\usepackage[italian]{babel}
+\usepackage[protrusion=true,expansion=true]{microtype}
+\usepackage{amsmath,amsfonts,amsthm}
+\usepackage[svgnames]{xcolor}
+\usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption}
+\usepackage{booktabs}
+\usepackage{fix-cm}
+\usepackage[margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\setlength{\columnsep}{.6cm}
 
-\usepackage{sectsty} % Enables custom section titles
-\allsectionsfont{\usefont{OT1}{phv}{b}{n5}} % Change the font of all section commands
-
-\usepackage{fancyhdr} % Needed to define custom headers/footers
-\pagestyle{fancy} % Enables the custom headers/footers
-\usepackage{lastpage} % Used to determine the number of pages in the document (for "Page X of Total")
+\usepackage{sectsty}
+\allsectionsfont{\usefont{OT1}{phv}{b}{n5}}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\usepackage{lastpage}
 
 % Headers - all currently empty
 \lhead{}
@@ -26,8 +30,8 @@
 \cfoot{}
 \rfoot{\footnotesize Page \thepage\ of \pageref{LastPage}} % "Page 1 of 2"
 
-\renewcommand{\headrulewidth}{0.0pt} % No header rule
-\renewcommand{\footrulewidth}{0.4pt} % Thin footer rule
+\renewcommand{\headrulewidth}{.0pt} % No header rule
+\renewcommand{\footrulewidth}{.4pt} % Thin footer rule
 
 \usepackage{lettrine} % Package to accentuate the first letter of the text
 \newcommand{\initial}[1]{ % Defines the command and style for the first letter
@@ -43,84 +47,73 @@
 
 \title{TensorFlow e Prove di Apprendimento Distribuito} % Your article title
 
-\posttitle{\par\end{flushleft}\vskip 0.5em} % Whitespace under the title
+\posttitle{\par\end{flushleft}\vskip 2em} % Whitespace under the title
 
-\preauthor{\begin{flushleft}\large \lineskip 0.5em \usefont{OT1}{phv}{b}{sl} \color{DarkRed}} % Author font configuration
+\preauthor{\begin{flushleft}\large \lineskip 0.4em \usefont{OT1}{phv}{b}{sl} \color{DarkRed}} % Author font configuration
 
 \author{Maxim Gaina e Bartolomeo Lombardi} % Your name
 
 \postauthor{\footnotesize \usefont{OT1}{phv}{m}{sl} \color{Black} % Configuration for the institution name
-, Università degli Studi di Bologna % Your institution
+\\ Lavoro di progetto per Sistemi Peer-to-Peer, Università degli Studi di Bologna % Your institution
 
 \par\end{flushleft}\HorRule} % Horizontal rule after the title
 
 \date{} % Add a date here if you would like one to appear underneath the title block
 
+
 \begin{document}
-
-\maketitle % Print the title
-
-\thispagestyle{fancy} % Enabling the custom headers/footers for the first page 
-
-% The first character should be within \initial{}
-\initial{H}\textbf{ere is some sample text to show the initial in the introductory paragraph of this template article. The color and lineheight of the initial can be modified in the preamble of this document.}
-
-\section*{Section 1}
-
-\lipsum[4] % Dummy text
-
-%------------------------------------------------
-
-\subsection*{Subsection 1}
-
-\lipsum[5] % Dummy text
-
-\begin{itemize}
-\item First item in a list 
-\item Second item in a list 
-\item Third item in a list
-\end{itemize}
-
-\subsection*{Subsection 2}
-
-\begin{table}
-\caption{Random table}
-\centering
-\begin{tabular}{llr}
-\toprule
-\multicolumn{2}{c}{Name} \\
-\cmidrule(r){1-2}
-First name & Last Name & Grade \\
-\midrule
-John & Doe & $7.5$ \\
-Richard & Miles & $2$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-%------------------------------------------------
-
-\section*{Section 2}
-
-\begin{description}
-\item[First] This is the first item
-\item[Last] This is the last item
-\end{description}
-
-\lipsum[9] % Dummy text
-
-\section{APPUNTI BART}
-
-
-\begin{thebibliography}{99} % Bibliography - this is intentionally simple in this template
-
-\bibitem[Figueredo and Wolf, 2009]{Figueredo:2009dg}
-Figueredo, A.~J. and Wolf, P. S.~A. (2009).
-\newblock Assortative pairing and life history strategy - a cross-cultural
-  study.
-\newblock {\em Human Nature}, 20:317--330.
- 
-\end{thebibliography}
-
+	\maketitle
+	\thispagestyle{fancy}
+	% The first character should be within \initial{}
+	\initial{Q}\textbf{uesto lavoro di progetto mira ad apprendere e riassumere le basi di TensorFlow \cite{tf}, il quale, come da definizione, è un'interfaccia per esprimere algoritmi nell'ambito di Machine Learning con anche la possibilità di implementarli. Successivamente l'intenzione sarà quella di esplorare le primitive offerte in ambito del calcolo distribuito e, dato un problema facilmente risolvibile tramite reti neurali, fare delle prove pratiche per ottenere una soluzione soddisfacente usando un sistema di macchine connesse.}
+	
+	\begin{multicols}{2}
+		\tableofcontents
+		\section{Concetti base di TensorFlow}
+			TensorFlow nasce dalla necessità di avere un sistema con le giuste proprietà e requisiti per \textit{allenare} e usare reti neurali in ambienti distribuiti su larga scala e non. La computazione di un programma scritto in TensorFlow è eseguibile su piattaforme multiple ed eterogenee con poco o senza alcun cambiamento. Per ogni piattaforma presa in considerazione, è previsto lo sfruttamento dei diversi device a sua disposizione con capacità di calcolo, come processori centrali e acceleratori di grafica. Le computazioni vengono espresse da flussi di dati che scorrono all'interno di un grafo che possiede uno stato. Ulteriori obiettivi, sono quelli di fornire un linguaggio \textit{flessibile}, che permette la rapida implementazione di diversi modelli; un linguaggio il più possibile \textit{performante} nonostante la flessibilità; e forme di parallelismo con requisiti più o meno forti, per passare con facilità da ambienti isolati ad ambienti distribuiti.
+		
+		\section{APPUNTI}
+		L'articolo del 2015 cercherà di essere aggiornato con qualcosa che c'è sul sito.
+			\begin{itemize}
+				\item Paradigma e Concetti Base
+				\begin{itemize}
+					\item Operazioni e Kernel
+					\item Sessioni
+					\item Variabili
+					\item[my] Placeholders?
+				\end{itemize}
+				\item Implementazione
+				\begin{itemize}
+					\item Devices
+					\item Tensori
+					\item Esecuzione su singolo e multiplo device
+					\begin{itemize}
+						\item dove collocare nodi
+						\item come comunicare fra nodi
+					\end{itemize}
+					\item Esecuzione distribuita, tolleranza fault
+				\end{itemize}
+				
+				
+				\begin{itemize}
+					\item
+				\end{itemize}
+			\end{itemize}
+		
+		\begin{description}
+		\item[First] This is the first item
+		\item[Last] This is the last item
+		\end{description}
+		
+		\section{APPUNTI BART}
+		
+		\begin{thebibliography}{9}
+			\bibitem{tf}
+			Google Research,
+			\emph{TensorFlow: Large-Scale Machine Learning on Heterogeneous Distributed Systems},
+			Preliminary White Paper,
+			2015.
+		\end{thebibliography}
+	\end{multicols}
 
 \end{document}
