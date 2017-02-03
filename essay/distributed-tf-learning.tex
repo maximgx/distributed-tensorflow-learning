@@ -2,6 +2,7 @@
 %\documentclass[DIV=calc, paper=a4, fontsize=11pt, twocolumn]{scrartcl}	 % A4 paper and 11pt font size
 
 \usepackage{multicol}
+\usepackage{color}
 \usepackage{lipsum}
 \usepackage[italian]{babel}
 \usepackage[protrusion=true,expansion=true]{microtype}
@@ -12,6 +13,12 @@
 \usepackage{fix-cm}
 \usepackage[margin=1in]{geometry}
 \usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage{url}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
 \setlength{\columnsep}{.6cm}
 
 \usepackage{sectsty}
@@ -60,6 +67,42 @@
 
 \date{} % Add a date here if you would like one to appear underneath the title block
 
+% Default fixed font does not support bold face
+\DeclareFixedFont{\ttb}{T1}{txtt}{bx}{n}{12} % for bold
+\DeclareFixedFont{\ttm}{T1}{txtt}{m}{n}{12}  % for normal
+
+% Custom colors
+\definecolor{deepblue}{rgb}{0,0,0.5}
+\definecolor{deepred}{rgb}{0.6,0,0}
+\definecolor{deepgreen}{rgb}{0,0.5,0}
+
+\usepackage{listings}
+
+% Python style for highlighting
+\newcommand\pythonstyle{\lstset{
+		language=Python,
+		basicstyle=\ttm,
+		otherkeywords={self},             % Add keywords here
+		keywordstyle=\ttb\color{deepblue},
+		emph={MyClass,__init__},          % Custom highlighting
+		emphstyle=\ttb\color{deepred},    % Custom highlighting style
+		stringstyle=\color{deepgreen},
+		frame=tb,                         % Any extra options here
+		showstringspaces=false            % 
+}}
+
+% Python environment
+\lstnewenvironment{python}[1][]
+{
+	\pythonstyle
+	\lstset{#1}
+}
+{}
+
+% Python for external files
+\newcommand\pythonexternal[2][]{{
+		\pythonstyle
+		\lstinputlisting[#1]{#2}}}
 
 \begin{document}
 	\maketitle
@@ -82,11 +125,53 @@
 				\item[Variabili] I grafi vengono spesso eseguiti più volte e i tensors devono sopravvivere fra un'esecuzione e l'altra, per questo sono state create le variabili che salvano il loro valore, quando necessario. Le variabili sono anche esse tipi di nodo.
 			\end{description}
 		
-		\section{Implementazione}
+			\begin{figure*}
+				\begin{python}
+# Matrice 1x2
+matrice1 = tf.constant([[3., 3.]])
+# Matrice 2x1
+matrice2 = tf.constant([[2.],[2.]])
+# Prdotto delle due matrici
+prodotto = tf.matmul(matrice1, matrice2)
+				\end{python}
+				\caption{Costruzione grafo in TensorFlow dove le due matrici e il prodotto diventano 3 nodi}
+				\label{py:costruzione}
+			\end{figure*}
 		
+			\begin{figure*}
+				\centering
+				\begin{python}
+sessione = tf.Session()
+risultato = sessione.run(prodotto)
+sessione.close()
+				\end{python}
+				\caption{Lancio di esecuzione del grafo tramite sessione}
+				\label{py:lancio}
+			\end{figure*}
+		
+		\section{Implementazione}
+			Le componenti principali del sistema TensorFlow sono il \textit{client} e il \textit{master}. Il client usa le sessioni per comunicare con il master. Il client usa anche uno o più \textit{work processes} per accedere a uno o più \textit{device}.
+			
+			\begin{figure*}
+				\centering
+				\begin{python}
+with tf.Session() as sessione:
+	with tf.device("/gpu:1"):
+		matrice1 = tf.constant([[3., 3.]])
+		matrice2 = tf.constant([[2.],[2.]])
+		prodotto = tf.matmul(matrice1, matrice2)
+				\end{python}
+				\caption{Lancio di esecuzione del grafo tramite sessione}
+				\label{py:device}
+			\end{figure*}
+			
+			\subsection{Esecuzione su singolo device}
+			
+			\subsection{Esecuzione su device multipli}
+			
 		\section{Estensioni}
 		
-		\section{Appunti Bart}
+		\section{Appunti Bart}		
 		
 		\begin{thebibliography}{9}
 			\bibitem{tf}
