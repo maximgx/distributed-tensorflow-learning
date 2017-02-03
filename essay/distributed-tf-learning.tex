@@ -69,43 +69,25 @@
 	
 	\begin{multicols}{2}
 		\tableofcontents
-		\section{Concetti base di TensorFlow}
-			TensorFlow nasce dalla necessità di avere un sistema con le giuste proprietà e requisiti per \textit{allenare} e usare reti neurali in ambienti distribuiti su larga scala e non. La computazione di un programma scritto in TensorFlow è eseguibile su piattaforme multiple ed eterogenee con poco o senza alcun cambiamento. Per ogni piattaforma presa in considerazione, è previsto lo sfruttamento dei diversi device a sua disposizione con capacità di calcolo, come processori centrali e acceleratori di grafica. Le computazioni vengono espresse da flussi di dati che scorrono all'interno di un grafo che possiede uno stato. Ulteriori obiettivi, sono quelli di fornire un linguaggio \textit{flessibile}, che permette la rapida implementazione di diversi modelli; un linguaggio il più possibile \textit{performante} nonostante la flessibilità; e forme di parallelismo con requisiti più o meno forti, per passare con facilità da ambienti isolati ad ambienti distribuiti.
+		\section*{Cosa è TensorFlow}
+			TensorFlow nasce dalla necessità di avere un sistema con le giuste proprietà e requisiti per \textit{allenare} e usare reti neurali in ambienti distribuiti su larga scala e non. La computazione di un programma scritto in TensorFlow è eseguibile su piattaforme multiple ed eterogenee con poco o senza alcun cambiamento. Per ogni piattaforma presa in considerazione, è previsto lo sfruttamento dei diversi device a sua disposizione con capacità di calcolo, come processori centrali e acceleratori di grafica. Le computazioni vengono espresse da flussi di dati che scorrono all'interno di un grafo, e con i nodi che lo compongono che hanno un loro stato. Ulteriori obiettivi sono quelli di fornire un linguaggio \textit{flessibile}, che permetta la rapida implementazione di diversi modelli; un linguaggio il più possibile \textit{performante} nonostante la flessibilità appena citata; e forme di parallelismo con requisiti più o meno forti, anche per passare con facilità da ambienti isolati ad ambienti distribuiti.
+			
+		\section{Paradigma e Concetti Base}
+			Una computazione TensorFlow è descritta da un \textit{grafo diretto} composto da un insieme di \textit{nodi}. Il grafo supporta computazioni che sono flussi di dati attraverso sé. I nodi mantengono e aggiornano i propri stati persistenti tramite estensioni, che permettono di creare anche cicli e altre strutture. Ogni nodo ha zero o più input e output ed è l'istanziazione di un'operazione. I valori che \textit{fluiscono } nel grafo sono detti \textbf{tensor}, array di dimensione $n$ nel quale ogni elemento ha tipo determinato a tempo di costruzione del grafo. Esistono anche particolari tipi di archi il cui unico scopo è quello di indicare le dipendenze fra nodi, cioè l'ordine di esecuzione. Vediamo ora meglio alcuni concetti.
+			
+			\begin{description}
+				\item[Operazione] Avente nome e attributi, rappresenta l'astrazione di una computazione (p.e. \texttt{add}, \texttt{mulmatrix}) su tensors in ingresso.
+				\item[Kernel] Implementazione particolare di un'operazione che le permette di essere eseguito su device particolari come una \texttt{GPU CUDA}.
+				\item[Sessione] I grafi dell'utente interagiscono con TensorFlow (vengono lanciati) tramite sessioni, le quali, avendo un'interfaccia, possono essere usate anche per modificare il grafo a runtime. Le sessioni hanno quindi un'operazione \textit{Run} che prendono in input il grafo stesso e i tensori da dargli in pasto.
+				\item[Variabili] I grafi vengono spesso eseguiti più volte e i tensors devono sopravvivere fra un'esecuzione e l'altra, per questo sono state create le variabili che salvano il loro valore, quando necessario. Le variabili sono anche esse tipi di nodo.
+			\end{description}
 		
-		\section{APPUNTI}
-		L'articolo del 2015 cercherà di essere aggiornato con qualcosa che c'è sul sito.
-			\begin{itemize}
-				\item Paradigma e Concetti Base
-				\begin{itemize}
-					\item Operazioni e Kernel
-					\item Sessioni
-					\item Variabili
-					\item[my] Placeholders?
-				\end{itemize}
-				\item Implementazione
-				\begin{itemize}
-					\item Devices
-					\item Tensori
-					\item Esecuzione su singolo e multiplo device
-					\begin{itemize}
-						\item dove collocare nodi
-						\item come comunicare fra nodi
-					\end{itemize}
-					\item Esecuzione distribuita, tolleranza fault
-				\end{itemize}
-				
-				
-				\begin{itemize}
-					\item
-				\end{itemize}
-			\end{itemize}
+		\section{Implementazione}
+			
 		
-		\begin{description}
-		\item[First] This is the first item
-		\item[Last] This is the last item
-		\end{description}
+		\section{Estensioni}
 		
-		\section{APPUNTI BART}
+		\section{Appunti Bart}
 		
 		\begin{thebibliography}{9}
 			\bibitem{tf}
