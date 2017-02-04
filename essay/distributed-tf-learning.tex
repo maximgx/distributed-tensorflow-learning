@@ -185,7 +185,22 @@ with tf.Session() as sessione:
 				\label{fig:computation}
 				\end{figure}
 			\subsection{Implementazione}
-				E' importante che ogni macchina del cluster conosca se stessa e le altre che ne fanno parte. Lo script implementato non parte fino a quanto tutte le macchine all'interno del nostro cluster sono online. Le specifiche del cluster sono le stesse per ogni macchina e solitamente sono costituite da parameter server e worker. Mentre il parameter server mantiene solamente i parametri condivisi, i worker effettuano alcuni o tutti i calcoli per nostro grafo. 
+				E' importante che ogni macchina del cluster conosca se stessa e le altre che ne fanno parte. Lo script implementato non parte fino a quanto tutte le macchine all'interno del nostro cluster sono online. Le specifiche del cluster sono le stesse per ogni macchina e solitamente sono costituite da parameter server e worker. Mentre il parameter server mantiene solamente i parametri condivisi, i worker effettuano i calcoli per il grafo.
+				\begin{figure*}
+				\pythonexternal{code/cluster.py}
+				\caption{Specifiche per il cluster.}
+				\label{py:clustercode}
+				\end{figure*}
+				ps e i worker sono chiamati \textbf{jobs} i quali, fondamentalmente, sono contenitori per uno o più \textbf{task}. Il task è il processo che il worker elaborerà durante la fase di training, volendo, è possibile aggiungere più task sulla stessa macchina. Questo potrebbe aver senso, in una macchina con più GPU, in questo modo tutti i task avranno un grafo completo del modello, ma se volessimo parallellizare il modello anzichè i dati, dovremmo cambiare il comportamento di ogni task, più nello specifico le operazioni che deve eseguire ogni task.
+				Nella parte di codice \ref{py:inputflags}, andiamo a inizializzare le macchine per l'esecuzione. 
+				\begin{figure*}
+				\pythonexternal{code/inputflags.py}
+				\caption{Specifiche per il cluster.}
+				\label{py:inputflags}
+				\end{figure*}
+				
+
+
 
 
 
