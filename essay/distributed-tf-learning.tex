@@ -174,7 +174,22 @@ with tf.Session() as sessione:
 		\section{Strumenti}
 		
 		\section{Appunti Bart}		
-		
+		Dopo svariate prove con la libreria, ci siamo posti come obiettivo, di parallelizzare la fase di training in modo asincrono, mettendo a disposizione le risorse di tre macchine, impostate come worker, e una per gestire il tutto, settata come parameter server. Facendo uso di una rete sigmoidea con una bassa frequenza di apprendimento, abbiamo misurato le diverse performance su MNIST. L'obiettivo non è stato quello di ottenere un'alta accuratezza dopo la fase di training, ma apprendere le funzionalità della libreria.
+		Il primo test valutativo, è stato quello di addestrare la rete per 20 epoche, usando un solo worker, con un risultato del 29\% di accuratezza. L'accuratezza è incrementata quando abbiamo aggiunto alla rete altre due macchine settate come worker.
+			\subsection{Addestramento distribuito}
+				Ci sono differenti modi per addestrare una rete in ambienti distribuiti. L'approccio più semplice è quello di condividere tutto il modello dei parametri attraverso tutti i worker mentre i dati vengono parallelizzati e il gradiente viene aggiornato. In un modello sincrono, alcuni gruppi vengono processati nello stesso lasso di tempo. Una volta che tutti i worker all'intero della rete hanno processato e terminato la fase di training, viene effettuata la media del tempo impiegato e vengono applicati gli aggiornamenti dei parametri, una sola volta. In un modello asincrono, ogni worker aggiornerà il modello dei parametri una volta che ha terminato la propria fase, senza aspettare gli altri. Durante la nostra fase di prova abbiamo usato un modello sincrono, poiché la regolazione dei parametri risultava molto complessa.
+				\begin{figure}[H]
+				\centering
+				\includegraphics[scale=.55]{img/sync-async.png}
+				\caption{Fase di training parallelizzata: sincrono e asincrono.}
+				\label{fig:computation}
+				\end{figure}
+			\subsection{Implementazione}
+				E' importante che ogni macchina del cluster conosca se stessa e le altre che ne fanno parte. Lo script implementato non parte fino a quanto tutte le macchine all'interno del nostro cluster sono online. Le specifiche del cluster sono le stesse per ogni macchina e solitamente sono costituite da parameter server e worker. Mentre il parameter server mantiene solamente i parametri condivisi, i worker effettuano alcuni o tutti i calcoli per nostro grafo. 
+
+
+
+
 		\begin{thebibliography}{9}
 			\bibitem{tf}
 			Google Research,
