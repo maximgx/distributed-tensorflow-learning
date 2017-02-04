@@ -108,7 +108,7 @@
 	\maketitle
 	\thispagestyle{fancy}
 	% The first character should be within \initial{}
-	\initial{Q}\textbf{uesto lavoro mira ad apprendere e riassumere le basi della libreria TensorFlow \cite{tf}, definita come, un'interfaccia per esprimere algoritmi in ambito Machine Learning con la possibilità di implementarli. Successivamente, l'intenzione sarà quella di esplorare le primitive offerte in ambito del calcolo distribuito, e dato un problema facilmente risolvibile tramite reti neurali, fare delle prove pratiche per ottenere una soluzione soddisfacente usando un sistema di macchine connesse.}
+	\initial{Q}\textbf{uesto lavoro mira ad apprendere e riassumere le basi della libreria TensorFlow \cite{tf}, definita come un'interfaccia per esprimere algoritmi in ambito Machine Learning e con la possibilità di implementarli. Successivamente, l'intenzione sarà quella di esplorare le primitive offerte in ambito del calcolo distribuito, e dato un problema facilmente risolvibile tramite reti neurali, fare delle prove pratiche per ottenere una soluzione soddisfacente, usando un sistema di macchine connesse.}
 	
 	\begin{multicols}{2}
 		\tableofcontents
@@ -121,7 +121,7 @@
 				\item[Operazione] Avente nome e attributi, rappresenta l'astrazione di una computazione (es. \texttt{add}, \texttt{mulmatrix}, etc) su tensors in ingresso.
 				\item[Kernel] Implementazione particolare di un'operazione che le permette di essere eseguito su device particolari come una \texttt{GPU CUDA}.
 				\item[Sessione] I grafi dell'utente interagiscono con TensorFlow (vengono lanciati) tramite sessioni, le quali, avendo un'interfaccia, possono essere usate anche per modificare il grafo a run-time. Le sessioni hanno quindi un'operazione \textit{Run}, che prendono in input il grafo stesso e i tensori.
-				\item[Variabili] I grafi vengono spesso eseguiti più volte e i tensors devono sopravvivere fra un'esecuzione e l'altra, per questo sono state create le variabili che salvano il loro valore, quando necessario. Le variabili sono anche esse tipi di nodo.
+				\item[Variabile] I grafi vengono spesso eseguiti più volte e i tensors devono sopravvivere fra un'esecuzione e l'altra, per questo sono state create le variabili che salvano il loro valore, quando necessario. Le variabili sono anche esse tipi di nodo.
 			\end{description}
 		
 			\begin{figure*}
@@ -149,12 +149,12 @@ sessione.close()
 			\end{figure*}
 		
 		\section{Implementazione}
-			Le componenti principali del sistema TensorFlow sono il \textit{client} e il \textit{master}. Il client usa le sessioni per comunicare con il master. Vengono usati uno o più \textit{worker process} per accedere a uno o più \textit{device} con capacità di calcolo. L'interfacci di TensorFlow è stata implementata sia per ambiente locale che distribuito.
+			Le componenti principali del sistema TensorFlow sono il \textit{client} e il \textit{master}. Il client usa le sessioni per comunicare con il master. Vengono usati uno o più \textit{worker process} per accedere a uno o più \textit{device} con capacità di calcolo. L'interfaccia di TensorFlow è stata implementata sia per ambiente locale che distribuito.
 			\begin{description}
-				\item[Locale] Client, master e worker si trovano sulla stessa macchina nel contesto di un singolo processi di sistema operativo.
+				\item[Locale] Client, master e worker si trovano sulla stessa macchina nel contesto di un singolo processo di sistema operativo.
 				\item[Distribuito] Client, master e worker si trovano in diversi processi potenzialmente su macchine fisiche diverse.
 			\end{description}
-			Ogni worker è responsabile di uno o più \textit{device} (Figura \ref{py:device}), e ogni device ha il suo tipo e nome. Nello scenario del singolo device è abbastanza facile eseguire il grafo: le dipendenze fra nodi sono facilmente individuabili e l'esecuzione dei nodi viene gestita tramite una pila, secondo una politica non meglio specificata. Discorso diverso per l'ambiente distribuito.
+			Ogni worker è responsabile di uno o più \textit{device} (Figura \ref{py:device}), e ogni device ha il suo tipo e nome. Nello scenario del singolo device è abbastanza facile eseguire il grafo: le dipendenze fra nodi sono facilmente individuabili e l'esecuzione dei nodi viene gestita tramite una pila, secondo una politica non meglio specificata. Discorso diverso per device multipli, e quindi anche per l'ambiente distribuito.
 			\begin{figure*}
 				\centering
 				\begin{python}
@@ -168,7 +168,11 @@ with tf.Session() as sessione:
 				\label{py:device}
 			\end{figure*}
 			\subsection{Esecuzione su device multipli}
-			
+				Per gestire la presenza di device multipli vengono adottati nuovi accorgimenti, è infatti necessario saper decidere a quale device assegnare la computazione di un dato nodo e saper comunicare fra grafi o sottografi che si trovano in posti diversi.
+				\paragraph*{Posizionamento dei nodi} Una delle prime preoccupazioni di TensorFlow è quella di mappare i nodi all'insieme dei device disponibili, e viene fatto tramite un apposito \textbf{algoritmo di posizionamento}. In base ad alcune euristiche, a tempo statico viene approssimato l'input di tale algoritmo, e viene detto \textbf{modello di costo}. Per ogni nodi esso contiene la stima dei suoi tensori in input e in output espressa in byte e la stima del tempo di esecuzione. Ora che possiede l'input, l'algoritmo di posizionamento lancia un'esecuzione simulata del grafo, dove in base a euristiche \textit{greedy} è in grado di scegliere l'opportuno device.
+				\paragraph{Comunicazione tra Device} A questo punto ogni device all'interno del sistema ha un proprio sottografo da eseguire. Ogni arco che unisce sottografi diversi e che quindi va dal nodo $x$ a $y$, viene sostituito con un arco che va da $x$ a \textit{send} e un'altro che va da \textit{recv} a $y$. \textit{send} e \textit{recv} sono nuovi nodi introdotti che gestiscono tutti i messaggi entranti e uscenti da un sottografo. Un po' come il corriere che si occupa di raccogliere tutte le spedizioni di una giornata, le porta in un'altro stato e le distribuisce ai relativi destinatari. Questo approccio permette di trasmettere dati una sola volta; permette che la memoria che spetta a un tensor sia allocata una sola volta anzi che più, e che nonostante il posizionamento dei nodi, l'utente possa esplicitamente assegnare l'esecuzione di un nodo a un determinato device (Figura \ref{py:device}).
+			\subsection{Esecuzione Distribuita}
+				L'approccio adottato per l'esecuzione distribuita di un grafo è quasi identico a quello preservato per i device. Qui la comunicazione tra grafi avviene tramite protocollo \texttt{TCP} o \texttt{RDMA}. Un'altra differenza è che negli ambienti distribuiti urge riflettere a una gestione degli errori di comunicazione. Gli errori possono avvenire tra i nodi \textit{send} e \textit{recv}, quindi è necessario verificare la salute degli scambi fra questi. Quando un fallimento viene rilevato l'esecuzione dell'intero grafo viene riavviata, ma questo non implica la perdita dei dati: si ricordi che i nodi variabile immagazzinano i tensors. Periodicamente vengono creati dei check-point dato che i nodi variabili sono collegati a speciali \textit{save node}, quindi è possibile ricoverare stati di esecuzione precedenti.
 		\section{Estensioni}
 		
 		\section{Appunti Bart}		

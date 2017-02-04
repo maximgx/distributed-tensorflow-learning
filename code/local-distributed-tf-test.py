@@ -33,8 +33,8 @@ FLAGS = tf.app.flags.FLAGS
 
 # start a server for a specific task
 server = tf.train.Server(cluster,
-													job_name=FLAGS.job_name,
-													task_index=FLAGS.task_index)
+							job_name=FLAGS.job_name,
+							task_index=FLAGS.task_index)
 
 # config
 batch_size = 100
@@ -128,7 +128,7 @@ elif FLAGS.job_name == "worker":
 		init_op = tf.global_variables_initializer()
 		print("Variables initialized...")
 
-	sv = tf.train.Supervisor(logdir = logs_path, is_chief = (FLAGS.task_index == 0),
+	sv = tf.train.Supervisor(logdir = None, is_chief = (FLAGS.task_index == 0),
 								global_step = global_step, init_op = init_op)
 
 	begin_time = time.time()
@@ -171,11 +171,11 @@ elif FLAGS.job_name == "worker":
 						" AvgTime: %3.2fms" % float(elapsed_time*1000/frequency))
 					count = 0
 
-
-		print("Test-Accuracy: %2.2f" % sess.run(accuracy,
+		print("=====================")
+		print("Test Accuracy: %2.2f" % sess.run(accuracy,
 						feed_dict={x: mnist.test.images, y_: mnist.test.labels}))
 		print("Total Time: %3.2fs" % float(time.time() - begin_time))
 		print("Final Cost: %.4f" % cost)
 
 	sv.stop()
-	print("done")
+	print("Done.")
