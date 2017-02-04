@@ -52,7 +52,7 @@
 
 \pretitle{\vspace{-30pt} \begin{flushleft} \HorRule \fontsize{30}{30} \usefont{OT1}{phv}{b}{n} \color{DarkRed} \selectfont} % Horizontal rule before the title
 
-\title{TensorFlow e Prove di Apprendimento Distribuito} % Your article title
+\title{TensorFlow e Apprendimento Distribuito} % Your article title
 
 \posttitle{\par\end{flushleft}\vskip 2em} % Whitespace under the title
 
@@ -108,20 +108,19 @@
 	\maketitle
 	\thispagestyle{fancy}
 	% The first character should be within \initial{}
-	\initial{Q}\textbf{uesto lavoro mira ad apprendere e riassumere le basi di TensorFlow \cite{tf}, il quale, come da definizione, è un'interfaccia per esprimere algoritmi nell'ambito di Machine Learning con anche la possibilità di implementarli. Successivamente l'intenzione sarà quella di esplorare le primitive offerte in ambito del calcolo distribuito e, dato un problema facilmente risolvibile tramite reti neurali, fare delle prove pratiche per ottenere una soluzione soddisfacente usando un sistema di macchine connesse.}
+	\initial{Q}\textbf{uesto lavoro mira ad apprendere e riassumere le basi della libreria TensorFlow \cite{tf}, definita come, un'interfaccia per esprimere algoritmi in ambito Machine Learning con la possibilità di implementarli. Successivamente, l'intenzione sarà quella di esplorare le primitive offerte in ambito del calcolo distribuito, e dato un problema facilmente risolvibile tramite reti neurali, fare delle prove pratiche per ottenere una soluzione soddisfacente usando un sistema di macchine connesse.}
 	
 	\begin{multicols}{2}
 		\tableofcontents
 		\section*{Cosa è TensorFlow}
-			TensorFlow nasce dalla necessità di avere un sistema con le giuste proprietà e requisiti per \textit{allenare} e usare reti neurali in ambienti distribuiti su larga scala e non. La computazione di un programma scritto in TensorFlow è eseguibile su piattaforme multiple ed eterogenee con poco o senza alcun cambiamento. Per ogni piattaforma presa in considerazione, è previsto lo sfruttamento dei diversi device a sua disposizione con capacità di calcolo, come processori centrali e acceleratori di grafica. Le computazioni vengono espresse da flussi di dati che scorrono all'interno di un grafo, e con i nodi che lo compongono che hanno un loro stato. Ulteriori obiettivi sono quelli di fornire un linguaggio \textit{flessibile}, che permetta la rapida implementazione di diversi modelli; un linguaggio il più possibile \textit{performante} nonostante la flessibilità appena citata; e forme di parallelismo con requisiti più o meno forti, anche per passare con facilità da ambienti isolati ad ambienti distribuiti.
+			TensorFlow nasce dalla necessità di avere un sistema con le giuste proprietà e requisiti per \textit{allenare} e usare reti neurali in ambienti distribuiti su larga scala. La computazione di un programma scritto in TensorFlow è eseguibile su piattaforme multiple ed eterogenee con minimo o senza alcun cambiamento. Per ogni piattaforma presa in considerazione, è previsto lo sfruttamento delle risorse dei device a disposizione, con capacità di calcolo, come processori centrali (CPU) e acceleratori di grafica (GPU). Le computazioni vengono espresse da flussi di dati che scorrono all'interno di un grafo, il quale, ogni nodo che lo compone, ha un proprio stato. Ulteriori obiettivi sono quelli di fornire un linguaggio \textit{flessibile}, che permetta la rapida implementazione di diversi modelli; un linguaggio il più possibile \textit{performante} nonostante la flessibilità appena citata; e forme di parallelismo con requisiti più o meno forti, anche per passare con facilità da ambienti isolati ad ambienti distribuiti.
 			
 		\section{Paradigma e Concetti Base}
-			Una computazione TensorFlow è descritta da un \textit{grafo diretto} composto da un insieme di \textit{nodi}. Il grafo supporta computazioni che sono flussi di dati attraverso sé. I nodi mantengono e aggiornano i propri stati persistenti tramite estensioni, che permettono di creare anche cicli e altre strutture. Ogni nodo ha zero o più input e output ed è l'istanziazione di un'operazione. I valori che \textit{fluiscono } nel grafo sono detti \textbf{tensor}, array di dimensione $n$ nel quale ogni elemento ha tipo determinato a tempo di costruzione del grafo. Esistono anche particolari tipi di archi il cui unico scopo è quello di indicare le dipendenze fra nodi, cioè l'ordine di esecuzione. Vediamo ora meglio alcuni concetti.
-			
+			Una computazione TensorFlow è descritta da un \textit{grafo diretto}, composto da un insieme di \textit{nodi}. Il grafo supporta computazioni che sono flussi di dati che lo attraversano. I nodi mantengono e aggiornano i propri stati persistenti tramite estensioni, che permettono quindi di creare cicli e altre strutture. Ogni nodo ha zero o più input e output ed è l'istanziazione di un'operazione. I valori che \textit{fluiscono} nel grafo sono detti \textbf{tensor}, array di dimensione $n$ nel quale ogni elemento ha un tipo determinato a tempo di costruzione del grafo. Esistono anche particolari tipi di archi, il cui unico scopo è quello di indicare le dipendenze fra nodi, cioè l'ordine di esecuzione. Vediamo ora meglio alcuni concetti.
 			\begin{description}
-				\item[Operazione] Avente nome e attributi, rappresenta l'astrazione di una computazione (p.e. \texttt{add}, \texttt{mulmatrix}) su tensors in ingresso.
+				\item[Operazione] Avente nome e attributi, rappresenta l'astrazione di una computazione (es. \texttt{add}, \texttt{mulmatrix}, etc) su tensors in ingresso.
 				\item[Kernel] Implementazione particolare di un'operazione che le permette di essere eseguito su device particolari come una \texttt{GPU CUDA}.
-				\item[Sessione] I grafi dell'utente interagiscono con TensorFlow (vengono lanciati) tramite sessioni, le quali, avendo un'interfaccia, possono essere usate anche per modificare il grafo a runtime. Le sessioni hanno quindi un'operazione \textit{Run} che prendono in input il grafo stesso e i tensori da dargli in pasto.
+				\item[Sessione] I grafi dell'utente interagiscono con TensorFlow (vengono lanciati) tramite sessioni, le quali, avendo un'interfaccia, possono essere usate anche per modificare il grafo a run-time. Le sessioni hanno quindi un'operazione \textit{Run}, che prendono in input il grafo stesso e i tensori.
 				\item[Variabili] I grafi vengono spesso eseguiti più volte e i tensors devono sopravvivere fra un'esecuzione e l'altra, per questo sono state create le variabili che salvano il loro valore, quando necessario. Le variabili sono anche esse tipi di nodo.
 			\end{description}
 		
