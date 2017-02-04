@@ -150,8 +150,12 @@ sessione.close()
 			\end{figure*}
 		
 		\section{Implementazione}
-			Le componenti principali del sistema TensorFlow sono il \textit{client} e il \textit{master}. Il client usa le sessioni per comunicare con il master. Il client usa anche uno o più \textit{work processes} per accedere a uno o più \textit{device}.
-			
+			Le componenti principali del sistema TensorFlow sono il \textit{client} e il \textit{master}. Il client usa le sessioni per comunicare con il master. Vengono usati uno o più \textit{worker process} per accedere a uno o più \textit{device} con capacità di calcolo. L'interfacci di TensorFlow è stata implementata sia per ambiente locale che distribuito.
+			\begin{description}
+				\item[Locale] Client, master e worker si trovano sulla stessa macchina nel contesto di un singolo processi di sistema operativo.
+				\item[Distribuito] Client, master e worker si trovano in diversi processi potenzialmente su macchine fisiche diverse.
+			\end{description}
+			Ogni worker è responsabile di uno o più \textit{device} (Figura \ref{py:device}), e ogni device ha il suo tipo e nome. Nello scenario del singolo device è abbastanza facile eseguire il grafo: le dipendenze fra nodi sono facilmente individuabili e l'esecuzione dei nodi viene gestita tramite una pila, secondo una politica non meglio specificata. Discorso diverso per l'ambiente distribuito.
 			\begin{figure*}
 				\centering
 				\begin{python}
@@ -161,12 +165,9 @@ with tf.Session() as sessione:
 		matrice2 = tf.constant([[2.],[2.]])
 		prodotto = tf.matmul(matrice1, matrice2)
 				\end{python}
-				\caption{Lancio di esecuzione del grafo tramite sessione}
+				\caption{Vincolo di esecuzione tramite la \texttt{GPU 1} presente nel sistema}
 				\label{py:device}
 			\end{figure*}
-			
-			\subsection{Esecuzione su singolo device}
-			
 			\subsection{Esecuzione su device multipli}
 			
 		\section{Estensioni}
