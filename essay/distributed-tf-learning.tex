@@ -162,7 +162,7 @@ with tf.Session() as sessione:
 				\paragraph{Comunicazione tra Device}\label{paragraph:communication} A questo punto ogni device all'interno del sistema ha un proprio sottografo da eseguire. Ogni arco che unisce sottografi diversi e che quindi va dal nodo $x$ a $y$, viene sostituito con un arco che va da $x$ a \textit{send} e un'altro che va da \textit{recv} a $y$. \textit{send} e \textit{recv} sono nuovi nodi introdotti che gestiscono tutti i messaggi entranti e uscenti da un sottografo (Figura \ref{fig:send-recv}).
 				\begin{figure}[H]
 					\centering
-					\includegraphics[scale=.79]{img/send-recv.png}
+					\includegraphics[scale=.75]{img/send-recv.png}
 					\caption{Esempio di Grafo di Computazione, corrispondente alla Figura \ref{py:tfcode}}
 					\label{fig:send-recv}
 				\end{figure}
