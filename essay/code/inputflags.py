@@ -1,5 +1,7 @@
-tf.app.flags.DEFINE_string("job_name", "", "Either 'ps' or 'worker'")
-tf.app.flags.DEFINE_integer("task_index", 0, "Index of task within the job")
+tf.app.flags.DEFINE_string("job_name", "",
+			"Either 'ps' or 'worker'")
+tf.app.flags.DEFINE_integer("task_index", 0,
+			"Index of task within the job")
 FLAGS = tf.app.flags.FLAGS
 
 # start a server for a specific task
