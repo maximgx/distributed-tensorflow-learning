@@ -61,7 +61,7 @@
 \author{Maxim Gaina e Bartolomeo Lombardi} % Your name
 
 \postauthor{\footnotesize \usefont{OT1}{phv}{m}{sl} \color{Black} % Configuration for the institution name
-\\ Lavoro di progetto per Sistemi Peer-to-Peer, Università degli Studi di Bologna % Your institution
+\\Progetto in Sistemi Peer-to-Peer, Università degli Studi di Bologna % Your institution
 
 \par\end{flushleft}\HorRule} % Horizontal rule after the title
 
@@ -113,7 +113,7 @@
 	\begin{multicols}{2}
 		\tableofcontents
 		\section*{Cosa è TensorFlow}
-			TensorFlow nasce dalla necessità di avere un sistema con le giuste proprietà per \textit{allenare} e adoperare reti neurali in ambienti distribuiti su larga scala. La computazione di un programma, scritto in TensorFlow, è eseguibile su piattaforme multiple ed eterogenee con un minimo o senza alcun cambiamento. Per ogni piattaforma presa in considerazione, è previsto lo sfruttamento delle risorse dei device a disposizione, con capacità di calcolo, come processori centrali (CPU) e acceleratori di grafica (GPU). Le computazioni, vengono espresse da flussi di dati che scorrono all'interno di un grafo, il quale, ogni nodo che lo compone, ha un proprio stato. Ulteriori obiettivi, sono quelli di fornire un linguaggio \textit{flessibile}, che permetta la rapida implementazione di diversi modelli; un linguaggio il più possibile \textit{performante} nonostante la flessibilità appena citata; e forme di parallelismo con requisiti più o meno forti, anche per passare con estrema facilità da ambienti isolati ad ambienti distribuiti.
+			TensorFlow nasce dalla necessità di avere un sistema con le giuste proprietà per \textit{allenare} e adoperare reti neurali in ambienti distribuiti su larga scala. La computazione di un programma, che si interfaccia con la libreria, è eseguibile su piattaforme multiple ed eterogenee con cambiamenti minimi o addirittura nulli. Per ogni piattaforma presa in considerazione, è previsto lo sfruttamento delle risorse dei device a disposizione, con capacità di calcolo, come processori centrali (CPU) e acceleratori di grafica (GPU). Le computazioni, vengono espresse da flussi di dati che scorrono all'interno di un grafo, rispetto al quale, ogni nodo che lo compone ha un proprio stato. Ulteriori obiettivi si ritrovano nel fornire un linguaggio \textit{flessibile}, che permetta la rapida implementazione di diversi modelli; un linguaggio il più possibile \textit{performante} nonostante la flessibilità appena citata; e forme di parallelismo con requisiti più o meno forti (che permettono di passare con estrema facilità da ambienti isolati ad ambienti distribuiti).
 			
 			In questa relazione, verranno quindi riassunte le principali caratteristiche di TensorFlow. In alcuni casi verrà citato direttamente \cite{tf} e alcuni schemi o paragrafi al suo interno per aiutarne la comprensione. Il tutto verrà poi combinato con un caso di studio pratico della libreria.
 			
@@ -124,10 +124,10 @@
 				\caption{Esempio di Grafo di Computazione, corrispondente alla Figura \ref{py:tfcode}}
 				\label{fig:computation}
 			\end{figure}
-			Una computazione TensorFlow è descritta da un \textit{grafo diretto}, composto da un insieme di \textit{nodi}. Il grafo supporta computazioni, ossia flussi di dati che lo attraversano. I nodi mantengono e aggiornano i propri stati persistenti tramite estensioni, che permettono quindi, di creare cicli e altre strutture. Ogni nodo, ha zero o più input/output, descrivibile come l'istanziazione di un'operazione. I valori che \textit{fluiscono} nel grafo, sono detti \textbf{tensor}, array di dimensione $n$ nel quale ogni elemento ha un tipo determinato a tempo di costruzione del grafo. Esistono anche particolari tipi di archi, il cui unico scopo è quello di indicare le dipendenze fra nodi, cioè l'ordine di esecuzione. Vediamo ora meglio alcuni concetti.
+			Una computazione TensorFlow è descritta da un \textit{grafo diretto}, composto da un insieme di \textit{nodi}. Il grafo supporta computazioni, ossia flussi di dati che lo attraversano. I nodi mantengono e aggiornano i propri stati persistenti tramite estensioni, che permettono quindi, di creare cicli e altre strutture. Ogni nodo, ha zero o più input/output, riassumibile come l'istanziazione di un'operazione. I valori che \textit{fluiscono} nel grafo, sono detti \textbf{tensor}, array di dimensione $n$ nel quale ogni elemento ha un tipo determinato a tempo di costruzione del grafo. Esistono anche particolari tipi di archi, il cui unico scopo è quello di indicare le dipendenze fra nodi, ovvero l'ordine di esecuzione. Vediamo ora meglio alcuni concetti.
 			\begin{description}
 				\item[Operazione] Avente nome e attributi, rappresenta l'astrazione di una computazione (es. \texttt{add}, \texttt{mulmatrix}, etc) su tensors in ingresso.
-				\item[Kernel] Implementazione particolare di un'operazione che le permette di essere eseguito su device particolari come una \texttt{GPU CUDA}.
+				\item[Kernel] Implementazione particolare di un'operazione che le permette di essere eseguita su device particolari come una \texttt{GPU CUDA}.
 				\item[Sessione] I grafi dell'utente interagiscono con TensorFlow (vengono lanciati) attraverso sessioni, le quali, avendo un'interfaccia, possono essere usate anche per modificare il grafo a run-time. Le sessioni, hanno quindi un'operazione \textit{Run}, che prendono in input il grafo stesso e i tensori.
 				\item[Variabile] I grafi vengono spesso eseguiti più volte e i tensors devono sopravvivere fra un'esecuzione e l'altra, per questo sono state create le variabili che salvano il loro valore, quando necessario. Le variabili sono anche esse tipi di nodo.
 			\end{description}
@@ -143,7 +143,7 @@
 				\item[Locale] Client, master e worker si trovano sulla stessa macchina nel contesto di un singolo processo di sistema operativo.
 				\item[Distribuito] Client, master e worker si trovano in diversi processi potenzialmente su macchine fisiche diverse.
 			\end{description}
-			Ogni worker è responsabile di uno o più \textit{device} (Figura \ref{py:device}), e ogni device ha il suo tipo e un nome. Nello scenario del singolo device, è abbastanza facile eseguire il grafo: le dipendenze fra nodi sono facilmente individuabili e l'esecuzione dei nodi viene gestita tramite una pila, secondo una politica non meglio specificata. Discorso diverso per device multipli, e quindi anche per l'ambiente distribuito.
+			Ogni worker è responsabile di uno o più \textit{device} (Figura \ref{py:device}), e quest'ultimo ha il suo tipo e un nome. Nello scenario del singolo device, è abbastanza facile eseguire il grafo: le dipendenze fra nodi sono facilmente individuabili e l'esecuzione dei nodi viene gestita tramite una pila, secondo una politica non meglio specificata. Discorso diverso per device multipli, e quindi anche per l'ambiente distribuito.
 			\begin{figure*}
 				\centering
 				\begin{python}
@@ -157,22 +157,22 @@ with tf.Session() as sessione:
 				\label{py:device}
 			\end{figure*}
 			\subsection{Esecuzione su device multipli}
-				Per gestire la presenza di device multipli vengono adottati nuovi accorgimenti, è infatti necessario saper decidere a quale device assegnare la computazione di un dato nodo e saper comunicare fra grafi o sottografi che si trovano in posti diversi.
-				\paragraph*{Posizionamento dei nodi}\label{paragaph:partition} Una delle prime preoccupazioni di TensorFlow, è quella di mappare i nodi all'insieme dei device disponibili, questo viene fatto attraverso un apposito \textbf{algoritmo di posizionamento}. In base ad alcune euristiche, a tempo statico viene approssimato l'input di tale algoritmo, e viene detto \textbf{modello di costo}. Per ogni nodo, esso contiene la stima dei suoi tensori in input e in output espressa in byte e la stima del tempo di esecuzione. Ora che possiede l'input, l'algoritmo di posizionamento lancia un'esecuzione simulata del grafo, dove in base a euristiche \textit{greedy} è in grado di scegliere l'opportuno device.
-				\paragraph{Comunicazione tra Device}\label{paragraph:communication} A questo punto, ogni device all'interno del sistema ha un proprio sottografo da eseguire. Ogni arco che unisce sottografi diversi e che quindi va dal nodo $x$ a $y$, viene sostituito con un arco che va da $x$ a \textit{send} e un'altro che va da \textit{recv} a $y$. \textit{send} e \textit{recv} sono nuovi nodi introdotti che gestiscono tutti i messaggi entranti e uscenti da un sottografo (Figura \ref{fig:send-recv}).
+				Per gestire la presenza di device multipli vengono adottati nuovi accorgimenti: è infatti necessario saper decidere a quale device assegnare la computazione di un dato nodo e saper comunicare fra grafi o sottografi che si trovano in posti diversi.
+				\paragraph*{Posizionamento dei nodi}\label{paragaph:partition} Una delle prime preoccupazioni di TensorFlow, è quella di mappare i nodi all'insieme dei device disponibili, e tutto ciò viene fatto attraverso un apposito \textbf{algoritmo di posizionamento}. In base ad alcune euristiche, a tempo statico viene approssimato l'input di tale algoritmo, e viene detto \textbf{modello di costo}. Per ogni nodo, esso contiene la stima dei suoi tensori in input espressa in byte e la stima del tempo di esecuzione in output. Ora che possiede l'input, l'algoritmo di posizionamento lancia un'esecuzione simulata del grafo, dove in base a euristiche \textit{greedy} è in grado di scegliere l'opportuno device.
+				\paragraph{Comunicazione tra Device}\label{paragraph:communication} A questo punto, ogni device all'interno del sistema ha un proprio sottografo da eseguire. Ogni arco che unisce sottografi diversi, e che quindi va dal nodo $x$ a $y$, viene sostituito con un arco che va da $x$ a \textit{send} e da un'altro che va da \textit{recv} a $y$. \textit{Send} e \textit{recv} sono nuovi nodi introdotti che gestiscono tutti i messaggi entranti e uscenti da un sottografo (Figura \ref{fig:send-recv}).
 				\begin{figure}[H]
 					\centering
 					\includegraphics[scale=.75]{img/send-recv.png}
 					\caption{Esempio di Grafo di Computazione, corrispondente alla Figura \ref{py:tfcode}}
 					\label{fig:send-recv}
 				\end{figure}
-				Un pò come il corriere che si occupa di raccogliere tutte le spedizioni di una giornata, le porta in un'altro stato e le distribuisce ai relativi destinatari. Questo approccio, permette di trasmettere dati una sola volta; questo permette di allocare una sola volta la memoria che spetta a un tensor, invece che più volte, e che nonostante il posizionamento dei nodi, l'utente possa esplicitamente assegnare l'esecuzione di un nodo, a un determinato device (Figura \ref{py:device}).
+				Un pò come il corriere che si occupa di raccogliere tutte le spedizioni di una giornata, le porta in un'altro stato e le distribuisce ai relativi destinatari. Questo approccio, permette di trasmettere dati una sola volta; ovvero esso consente di allocare in un'unica soluzione la memoria che spetta a un tensor e permette all'utente di assegnare esplicitamente l'esecuzione di un nodo, ad un determinato device (Figura \ref{py:device}), nonostante il posizionamento di questi ultimi.
 			\subsection{Esecuzione Distribuita}
-				L'approccio adottato per l'esecuzione distribuita di un grafo è quasi identico a quello preservato per i device. Qui la comunicazione tra grafi avviene tramite protocollo \texttt{TCP} o \texttt{RDMA}. Un'altra differenza è che negli ambienti distribuiti urge riflettere a una gestione degli errori di comunicazione. Gli errori, possono avvenire tra i nodi \textit{send} e \textit{recv}, quindi è necessario verificare la salute degli scambi fra questi. Quando un fallimento viene rilevato, l'esecuzione dell'intero grafo viene riavviata, ma questo non implica la perdita dei dati: si ricordi che i nodi variabile, immagazzinano i tensors. Periodicamente, vengono creati dei check-point poiché i nodi variabili, sono collegati a speciali \textit{save node}; quindi è possibile ripristinare stati di esecuzione precedenti.
+				L'approccio adottato per l'esecuzione distribuita di un grafo è quasi identico a quello preservato per i device. Qui la comunicazione tra grafi avviene tramite protocollo \texttt{TCP} o \texttt{RDMA}. Un'altra differenza riscontrabile negli ambienti distribuiti e dunque urge riflettere su una gestione degli errori di comunicazione. Gli errori, possono avvenire tra i nodi \textit{send} e \textit{recv}, quindi è necessario verificare la salute degli scambi fra questi. Quando un fallimento viene rilevato, l'esecuzione dell'intero grafo viene riavviata, ma questo non implica la perdita dei dati: si ricordi che i nodi variabile, immagazzinano i tensors. Periodicamente, vengono creati inoltre dei check-point poiché i nodi variabili, sono collegati a speciali \textit{save node}: è possibile quindi ripristinare stati di esecuzione precedenti.
 		\section{Calcolo Distribuito del Gradiente}
-			Essendo TensorFlow dedicato all'apprendimento automatico, il basilare modello di programmazione comprende alcuni strumenti specializzati. In ambito Machine Learning, molti algoritmi di apprendimento, calcolano il gradiente di una funzione costo; TensorFlow supporta il calcolo automatico di questa funzione. A livello di grafo, si supponga che un tensor $C$ dipenda (tramite un complesso sottografo di operazioni) da un insieme di tensori $\{X_k\}$, allora è disponibile una funziona che ritorna i tensors $\{dC/dX_k\}$. Considerato che trattiamo Machine Learning e l'esecuzione di un grafo su ambiente distribuito, andremo ad approfondire tale estensione.
+			Essendo TensorFlow dedicato all'apprendimento automatico, il basilare modello di programmazione comprende alcuni strumenti specializzati. In ambito Machine Learning, molti algoritmi di apprendimento, calcolano il gradiente di una funzione costo. Occorre notare ora che TensorFlow supporta il calcolo automatico di questa funzione. A livello di grafo, si supponga che un tensor $C$ dipenda (tramite un complesso sottografo di operazioni) da un insieme di tensori $\{X_k\}$, allora risulta definita una funzione che ritorna i tensors $\{dC/dX_k\}$. Considerato che trattiamo Machine Learning e l'esecuzione di un grafo su ambiente distribuito, andremo ad approfondire tale estensione.
 			
-			Supponiamo che la situazione sia quella di dover computare il gradiente di un tensor $C$, rispetto al gradiente di un tensore $I$. Ecco quanto accade:
+			Supponiamo di dover computare il gradiente di un tensor $C$, rispetto al gradiente di un tensore $I$. Ecco quanto accade:
 			\begin{enumerate}
 				\item viene trovato il cammino fra $I$ e $C$ all'interno del grafo;
 				\item si va a ritroso da $C$ a $I$ e per ogni nodo operazione viene aggiunto un nuovo nodo al grafo di computazione, che computa la funzione gradiente, per la relativa operazione sul cammino di ritorno;
@@ -204,16 +204,16 @@ with tf.Session() as sessione:
 				\end{itemize}
 				Per approfondimenti si può vedere \cite{tf}.
 				
-				In questo paragrafo, ci soffermeremo con più attenzione, al controllo del flusso in quanto \textbf{cruciale in ambiente distribuito}. Poiché, viene usato un meccanismo importante di coordinazione distribuita. Questo nasce dalla necessità di gestire l'esecuzione \textit{loop} che riguardano nodi assegnati a differenti device o macchine, il loro stato va infatti in qualche modo mantenuto. La soluzione che propone TensorFlow è quella della \textit{riscrittura del grafo}: durante il partizionamento dei nodi (Sottosezione \ref{paragaph:partition}), un nodo di controllo viene aggiunto per ogni sottografo. I nodi di controllo implementano una \textit{macchina a stati} che orchestra lo start e la fine di ogni iterazione, oltre alla terminazione del loop stesso. Per ogni iterazione, il device che possiede il predicato della terminazione del loop, spedisce un messaggio di controllo verso tutti gli altri device coinvolti. Questi accorgimenti sono necessari anche per computare il gradiente precedentemente visto, in quanto è necessario sapere, per esempio, quale ramo di un \textit{if-then-else}	è stato imboccato per arrivare a $C$; oppure quante iterazioni sono state fatte da un particolare loop o quali erano i valori intermedi.
+				In questo paragrafo, ci soffermeremo con più attenzione, sul controllo del flusso, in quanto \textbf{cruciale in ambiente distribuito}. Dal momento che viene usato un meccanismo importante di coordinazione distribuita. Questo nasce dalla necessità di gestire l'esecuzione \textit{loop} che riguardano nodi assegnati a differenti device o macchine; il loro stato va infatti in qualche modo mantenuto. La soluzione che propone TensorFlow è quella della \textit{riscrittura del grafo}: durante il partizionamento dei nodi (Figura \ref{paragaph:partition}), un nodo di controllo viene aggiunto per ogni sottografo. I nodi di controllo implementano una \textit{macchina a stati} che orchestra lo start e la fine di ogni iterazione, oltre alla terminazione del loop stesso. Per ogni iterazione, il device che possiede il predicato della terminazione del loop, spedisce un messaggio di controllo verso tutti gli altri device coinvolti. Questi accorgimenti sono necessari anche per computare il gradiente precedentemente visto, in quanto è necessario sapere, per esempio, quale ramo di un \textit{if-then-else}	è stato imboccato per arrivare a $C$, oppure quante iterazioni sono state fatte da un particolare loop o quali erano i valori intermedi.
 		
 		\section{Forme di Parallelismo}
 		
 		\section{Ottimizzazioni e Strumenti}
 		Per completezza, verranno citate, ma non approfondite, alcune caratteristiche di TensorFlow che non risultano di primaria importanza in questo lavoro.
 		
-		Il sistema presenta alcuni accorgimenti per incrementare le performance e la gestione delle risorse. TensorFlow è in grado di individuare pezzi di grafo ridondanti che fanno "la stessa cosa" ed eliminarli, preservando la semantica del programma; può effettuare un controllo diretto dell'utilizzo della memoria e l'attivazione dei nodi di tipo \textit{recv} (Sottosezione \ref{paragraph:communication}), secondo politiche \texttt{as-soon-as-possible} oppure \texttt{as-late-as-possible}; implementa kernel non bloccanti e introduce librerie ottimizzate per lo sviluppo di kernel.
+		Il sistema presenta alcuni accorgimenti per incrementare le performance e la gestione delle risorse. TensorFlow è in grado di individuare pezzi di grafo ridondanti che fanno "la stessa cosa" ed eliminarli, preservando la semantica del programma. Essa può effettuare un controllo diretto dell'utilizzo della memoria e l'attivazione dei nodi di tipo \textit{recv} (Figura \ref{paragraph:communication}), secondo politiche \texttt{as-soon-as-possible} oppure \texttt{as-late-as-possible} ed infine implementa kernel non bloccanti e introduce librerie ottimizzate per lo sviluppo di kernel.
 		
-		Viene offerto un insieme di strumenti chiamato \texttt{TensorFlowBoard}. Esso permette agli utenti di esplorare graficamente la struttura del grafo di computazione e l'analisi del suo comportamento; aiuta la visualizzazione degli stati interni e traccia le performance.
+		Viene offerto un insieme di strumenti chiamato \texttt{TensorFlowBoard}. Esso permette agli utenti di esplorare graficamente la struttura del grafo di computazione, l'analisi del suo comportamento e aiuta la visualizzazione degli stati interni e traccia le performance.
 		
 		\section{Apprendimento distribuito: test empirici}
 		
@@ -229,32 +229,32 @@ with tf.Session() as sessione:
 					\label{fig:sync-async}
 				\end{figure}
 			\subsection{Implementazione}
-				E' di fondamentale importanza, che ogni macchina all'interno del cluster conosca se stessa e le altre che ne fanno parte. Lo script è stato implementato in modo tale che, la fase di training non parta finché tutte le macchine all'interno del  cluster siano online. Le specifiche del cluster sono le stesse per ogni macchina: costituite da parameter server e worker. Mentre il parameter server mantiene solamente i parametri condivisi, i worker effettuano i calcoli per il grafo.
+				E' di fondamentale importanza che ogni macchina all'interno del cluster conosca se stessa e le altre che ne fanno parte. Lo script è stato implementato in modo tale che la fase di training non parta finché tutte le macchine all'interno del  cluster siano online. Le specifiche del cluster sono le stesse per ogni macchina: costituite da parameter server e worker. Mentre il parameter server mantiene solamente i parametri condivisi, i worker effettuano i calcoli per il grafo.
 				\begin{figure*}
 					\pythonexternal{code/cluster.py}
 					\caption{Specifiche per il cluster.}
 					\label{py:clustercode}
 				\end{figure*}
-				ps e worker sono chiamati \textbf{jobs}, i quali, fondamentalmente, sono contenitori per uno o più \textbf{task}. Il task è il processo che il worker elaborerà durante l'esecuzione, volendo, è possibile aggiungere più task sulla stessa macchina. Questo potrebbe aver senso, in una macchina con più acceleratori di grafica (GPU); in questa ottica, tutti i task avranno un grafo completo del modello.
-				Se volessimo parallelizzare il modello anziché i dati, dovremmo cambiare il comportamento di ogni task, più nello specifico le operazioni che deve eseguire ogni task.
-				Nella parte di codice \ref{py:inputflags}, andiamo a inizializzare le macchine per l'esecuzione. 
+				Ps e worker sono chiamati \textbf{jobs}, i quali fondamentalmente sono contenitori per uno o più \textbf{task}. Il task è il processo che il worker elaborerà durante l'esecuzione. Volendo è possibile aggiungere più task sulla stessa macchina. Questo potrebbe aver senso in una macchina con più acceleratori di grafica (GPU): in questa ottica, tutti i task avranno un grafo completo del modello.
+				Se volessimo parallelizzare il modello anziché i dati, dovremmo cambiare il comportamento di ogni task, e più nello specifico le operazioni che deve eseguire ognuno di essi.
+				Nella parte di codice in Figura \ref{py:inputflags}, andiamo a inizializzare le macchine per l'esecuzione. 
 				\begin{figure*}
 					\pythonexternal{code/inputflags.py}
 					\caption{Specifiche e impostazione dei parametri per il cluster.}
 					\label{py:inputflags}
 				\end{figure*}
-				Per assicurarsi, che venga eseguito il task corretto, al primo avvio dello script (settato come worker), \textit{pc-02} sarà di default il worker con il $task\_index = 0$. Nella parte di codice \ref{py:inputflags} è mostrata la configurazione dei parametri e il caricamento dei dati MNIST.
+				Per assicurarsi, che venga eseguito il task corretto, al primo avvio dello script (settato come worker), \textit{pc-02} sarà di default il worker con il $task\_index = 0$. Nella parte di codice in Figura  \ref{py:inputflags} è mostrata la configurazione dei parametri e il caricamento dei dati MNIST.
 				Se lo script viene avviato come parameters server, viene eseguita la funzione \textit{server.join()}, in modo che si unisca al cluster.
-				Quello che segue sono le configurazioni delle variabili, e la definizione della computazione che ogni worker deve eseguire.
-				Dal momento in cui, si è scelto di computare l'intero modello su tutti i dispositivi, abbiamo aggiunto allo scope tutti i worker.
+				Quello che segue sono le configurazioni delle variabili e la definizione della computazione che ogni worker deve eseguire.
+				Dal momento in cui si è scelto di computare l'intero modello su tutti i dispositivi, abbiamo aggiunto allo scope tutti i worker.
 				\begin{figure*}
 					\pythonexternal{code/replica.py}
 					\caption{Replica del modello e aggiunta allo scope dei worker.}
 					\label{py:replica}
 				\end{figure*}
-				Quello che seguirà è l'implementazione del modello; 
+				Quello che seguirà è l'implementazione del modello. 
 				Attraverso l'inclusione di una variabile $global\_step$ (incrementata di uno ogni volta che il modello si aggiorna) riusciamo a migliorare la tracciabilità, durante la fase di training. Inoltre, a causa della gestione interna dei threads da parte di TensorFlow, questo non rende lo script deterministico, ovvero, non ci si può aspettare gli stessi risultati dopo ogni esecuzione.
-				Detto questo, abbiamo bisogno di ottenere la sessione al fine di eseguire i nostri cicli di training in un sistema distribuito; quindi risulta obbligatorio settare una macchina che prenda la posizione di \textbf{chief} (capo). Il \textit{chief} è un worker (nel nostro caso task 0) il quale gestisce e monitora il resto del cluster; la sessione quindi viene gestita dal \textit{chief}, attraverso il metodo Supervisor della classe train, \ref{py:supervisor}.
+				Detto questo, abbiamo bisogno di ottenere la sessione al fine di eseguire i nostri cicli di training in un sistema distribuito. Risulta quindi obbligatorio settare una macchina che prenda la posizione di \textbf{chief} (capo). Il \textit{chief} è un worker (nel nostro caso task 0) il quale gestisce e monitora il resto del cluster: La sessione quindi viene gestita dal \textit{chief}, attraverso il metodo Supervisor della classe train (Figura \ref{py:supervisor}).
 				\begin{figure*}
 					\pythonexternal{code/supervisor.py}
 					\caption{Instanza dell'oggetto supervisor.}
