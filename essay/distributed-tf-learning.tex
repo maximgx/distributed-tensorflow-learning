@@ -222,12 +222,12 @@ with tf.Session() as sessione:
 		Il primo test valutativo, è stato quello di addestrare la rete per 20 epoche, usando un solo worker, con un risultato del 29\% di accuratezza. L'accuratezza è incrementata quando abbiamo aggiunto alla rete altre due macchine settate come worker.
 			\subsection{Addestramento distribuito}
 				Esistono differenti modi per addestrare una rete in ambienti distribuiti. L'approccio più semplice è quello di condividere tutto il modello dei parametri con tutti i worker mentre i dati vengono parallelizzati e il gradiente viene aggiornato. In un modello \textbf{sincrono}, alcuni gruppi vengono processati nello stesso lasso di tempo. Una volta che tutti i worker all'intero della rete hanno processato e terminato la fase di training, viene effettuata la media del tempo impiegato e vengono applicati gli aggiornamenti dei parametri, una sola volta. Invece, in un modello \textbf{asincrono}, ogni worker aggiornerà il modello dei parametri una volta che ha terminato la propria fase, senza aspettare la fine dell'esecuzione degli altri. Durante la fase di prova, abbiamo usato un modello sincrono, poiché la regolazione dei parametri per il modello asincrono risultava molto complessa.
-				\begin{figure}[H]
+				\begin{figure*}[t]
 					\centering
-					\includegraphics[scale=.55]{img/sync-async.png}
+					\includegraphics[scale=.69]{img/sync-async.png}
 					\caption{Fase di training parallelizzata: sincrono e asincrono.}
 					\label{fig:sync-async}
-				\end{figure}
+				\end{figure*}
 			\subsection{Implementazione}
 				E' di fondamentale importanza che ogni macchina all'interno del cluster conosca se stessa e le altre che ne fanno parte. Lo script è stato implementato in modo tale che la fase di training non parta finché tutte le macchine all'interno del  cluster siano online. Le specifiche del cluster sono le stesse per ogni macchina: costituite da parameter server e worker. Mentre il parameter server mantiene solamente i parametri condivisi, i worker effettuano i calcoli per il grafo.
 				\begin{figure*}
