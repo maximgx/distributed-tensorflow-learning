@@ -197,9 +197,9 @@ with tf.Session() as sessione:
 				\begin{itemize}
 					\item esecuzione parziale del grafo, dove l'utente sceglie quali nodi eseguire;
 					\item vincoli di collocamento di un nodo, tramite i quali l'utente costringe un nodo a essere eseguito su un particolare device;
-					\item controllo del flusso di esecuzione, che è un insieme di primitive che permettono di manipolare l'esecuzione del grafo (costrutti \texttt{if}, cicli \texttt{while}, \texttt{Switch}, \texttt{Merge}, etc)
-					\item nodi \textit{feed}, che fungono da fonte di tensors per altri nodi 
-					\item \texttt{queue} che permettono l'esecuzione asincrona del grafo
+					\item controllo del flusso di esecuzione, che è un insieme di primitive che permettono di manipolare l'esecuzione del grafo (costrutti \texttt{if}, cicli \texttt{while}, \texttt{Switch}, \texttt{Merge}, etc);
+					\item nodi \textit{feed}, che fungono da fonte di tensors per altri nodi;
+					\item \texttt{queue} che permettono l'esecuzione asincrona del grafo;
 					\item\texttt{containers} per gestire gli stati all'interno del grafo, e altre.
 				\end{itemize}
 				Per approfondimenti si può vedere \cite{tf}.
@@ -224,36 +224,27 @@ with tf.Session() as sessione:
 		
 		Il sistema presenta alcuni accorgimenti per incrementare le performance e la gestione delle risorse. TensorFlow è in grado di individuare pezzi di grafo ridondanti che fanno "la stessa cosa" ed eliminarli, preservando la semantica del programma. Essa può effettuare un controllo diretto dell'utilizzo della memoria e l'attivazione dei nodi di tipo \textit{recv} (Figura \ref{paragraph:communication}), secondo politiche \texttt{as-soon-as-possible} oppure \texttt{as-late-as-possible} ed infine implementa kernel non bloccanti e introduce librerie ottimizzate per lo sviluppo di kernel.
 		
-		Viene offerto un insieme di strumenti chiamato \texttt{TensorFlowBoard}. Esso permette agli utenti di esplorare graficamente la struttura del grafo di computazione, l'analisi del suo comportamento e aiuta la visualizzazione degli stati interni e traccia le performance.
-		
-		\section{Apprendimento distribuito: test empirici}
-		
-		\section{Appunti Bart}		
+		Viene offerto un insieme di strumenti chiamato \texttt{TensorFlowBoard}. Esso permette agli utenti di esplorare graficamente la struttura del grafo di computazione, l'analisi del suo comportamento e aiuta la visualizzazione degli stati interni e traccia le performance.		
+		\begin{figure*}
+			\pythonexternal{code/cluster.py}
+			\caption{Specifiche per il cluster.}
+			\label{py:clustercode}
+		\end{figure*}
+		\begin{figure*}
+			\pythonexternal{code/inputflags.py}
+			\caption{Specifiche e impostazione dei parametri per il cluster.}
+			\label{py:inputflags}
+		\end{figure*}
+		\section{Apprendimento distribuito: test empirici}	
 		Dopo svariate prove con la libreria, ci siamo posti come obiettivo, di parallelizzare la fase di training in modo asincrono, mettendo a disposizione le risorse di tre macchine, due impostate come worker e una per gestire il tutto, settata come parameter server. Facendo uso di una rete sigmoidea con una bassa frequenza di apprendimento, abbiamo misurato le diverse performance su MNIST. L'obiettivo non è stato quello di ottenere un'alta accuratezza dopo la fase di training, ma apprendere le funzionalità della libreria in ambiente distribuito.
 		Il primo test valutativo, è stato quello di addestrare la rete per 20 epoche, usando un solo worker, con un risultato del 29\% di accuratezza. L'accuratezza è incrementata quando abbiamo aggiunto alla rete altre due macchine settate come worker.
 			\subsection{Addestramento distribuito}
 				Esistono differenti modi per addestrare una rete in ambienti distribuiti. L'approccio più semplice è quello di condividere tutto il modello dei parametri con tutti i worker mentre i dati vengono parallelizzati e il gradiente viene aggiornato. In un modello \textbf{sincrono}, alcuni gruppi vengono processati nello stesso lasso di tempo. Una volta che tutti i worker all'intero della rete hanno processato e terminato la fase di training, viene effettuata la media del tempo impiegato e vengono applicati gli aggiornamenti dei parametri, una sola volta. Invece, in un modello \textbf{asincrono}, ogni worker aggiornerà il modello dei parametri una volta che ha terminato la propria fase, senza aspettare la fine dell'esecuzione degli altri. Durante la fase di prova, abbiamo usato un modello sincrono, poiché la regolazione dei parametri per il modello asincrono risultava molto complessa.
-				\begin{figure*}[t]
-					\centering
-					\includegraphics[scale=.69]{img/sync-async.png}
-					\caption{Fase di training parallelizzata: sincrono e asincrono.}
-					\label{fig:sync-async}
-				\end{figure*}
 			\subsection{Implementazione}
 				E' di fondamentale importanza che ogni macchina all'interno del cluster conosca se stessa e le altre che ne fanno parte. Lo script è stato implementato in modo tale che la fase di training non parta finché tutte le macchine all'interno del  cluster siano online. Le specifiche del cluster sono le stesse per ogni macchina: costituite da parameter server e worker. Mentre il parameter server mantiene solamente i parametri condivisi, i worker effettuano i calcoli per il grafo.
-				\begin{figure*}
-					\pythonexternal{code/cluster.py}
-					\caption{Specifiche per il cluster.}
-					\label{py:clustercode}
-				\end{figure*}
 				Ps e worker sono chiamati \textbf{jobs}, i quali fondamentalmente sono contenitori per uno o più \textbf{task}. Il task è il processo che il worker elaborerà durante l'esecuzione. Volendo è possibile aggiungere più task sulla stessa macchina. Questo potrebbe aver senso in una macchina con più acceleratori di grafica (GPU): in questa ottica, tutti i task avranno un grafo completo del modello.
 				Se volessimo parallelizzare il modello anziché i dati, dovremmo cambiare il comportamento di ogni task, e più nello specifico le operazioni che deve eseguire ognuno di essi.
 				Nella parte di codice in Figura \ref{py:inputflags}, andiamo a inizializzare le macchine per l'esecuzione. 
-				\begin{figure*}
-					\pythonexternal{code/inputflags.py}
-					\caption{Specifiche e impostazione dei parametri per il cluster.}
-					\label{py:inputflags}
-				\end{figure*}
 				Per assicurarsi, che venga eseguito il task corretto, al primo avvio dello script (settato come worker), \textit{pc-02} sarà di default il worker con il $task\_index = 0$. Nella parte di codice in Figura  \ref{py:inputflags} è mostrata la configurazione dei parametri e il caricamento dei dati MNIST.
 				Se lo script viene avviato come parameters server, viene eseguita la funzione \textit{server.join()}, in modo che si unisca al cluster.
 				Quello che segue sono le configurazioni delle variabili e la definizione della computazione che ogni worker deve eseguire.
