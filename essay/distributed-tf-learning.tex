@@ -249,11 +249,11 @@ with tf.Session() as sessione:
 			\end{figure*}
 		
 		\subsection{Implementazione}
-			È di fondamentale importanza che ogni macchina all'interno del cluster conosca se stessa e le altre che ne fanno parte. Lo script è stato implementato in modo tale che la fase di training non parta finché tutte le macchine all'interno del cluster siano online. Le specifiche del cluster (Figura \ref{py:clustercode}) sono le stesse per ogni macchina: costituite da \texttt{parameter server} e \texttt{worker}. Mentre il \texttt{parameter server} mantiene solamente i parametri condivisi, i \texttt{worker} effettuano i calcoli per il grafo. \texttt{worker} e \texttt{ps} sono chiamati \textbf{jobs}, i quali fondamentalmente sono contenitori per uno o più \textbf{task}. Il task è il processo che il \texttt{worker} elaborerà durante l'esecuzione. Volendo è possibile aggiungere più task sulla stessa macchina. Questo potrebbe aver senso in una macchina con più \texttt{GPU}: in questa ottica, tutti i task avranno un grafo completo del modello.
+			È di fondamentale importanza che ogni macchina all'interno del cluster conosca se stessa e le altre che ne fanno parte. Lo script è stato implementato in modo tale che la fase di training non parta finché tutte le macchine all'interno del cluster siano online. Le specifiche del cluster (Figura \ref{py:clustercode}) sono le stesse per ogni macchina: costituite da \texttt{parameter server} e \texttt{worker}. Mentre il \texttt{parameter server} mantiene solamente i parametri condivisi, i \texttt{worker} effettuano i calcoli per il grafo. \texttt{Worker} e \texttt{ps} sono chiamati \textbf{jobs}, i quali fondamentalmente sono contenitori per uno o più \textbf{task}. Il task è il processo che il \texttt{worker} elaborerà durante l'esecuzione. Volendo è possibile aggiungere più task sulla stessa macchina. Questo potrebbe aver senso in una macchina con più \texttt{GPU}: in questa ottica, tutti i task avranno un grafo completo del modello.
 			
 			Se volessimo parallelizzare il modello anziché i dati, dovremmo cambiare il comportamento di ogni task, e più nello specifico le operazioni che deve eseguire ognuno di essi. Nella parte di codice in Figura \ref{py:inputflags}, si vanno a inizializzare le macchine per l'esecuzione. 
 			
-			Per assicurarsi, che venga eseguito il task corretto, al primo avvio dello script (settato come \texttt{worker}), \textit{altoum} sarà di default il \texttt{worker} con il $task\_index = 0$. Se lo script viene avviato come parameters server, viene eseguita la funzione \textit{server.join()}, in modo che si unisca al cluster. Quello che segue sono le configurazioni delle variabili e la definizione della computazione che ogni \texttt{worker} deve eseguire. Dal momento in cui si è scelto di computare l'intero modello su tutti i dispositivi, sono stati aggiunti allo scope tutti gli \texttt{worker} (\ref{py:replica}).
+			Per assicurarsi, che venga eseguito il task corretto, al primo avvio dello script (settato come \texttt{worker}), \textit{altoum} sarà di default il \texttt{worker} con il $task\_index = 0$. Se lo script viene avviato come parameters server, viene eseguita la funzione \textit{server.join()}, in modo che si unisca al cluster. Quello che segue sono le configurazioni delle variabili e la definizione della computazione che ogni \texttt{worker} deve eseguire. Dal momento in cui si è scelto di computare l'intero modello su tutti i dispositivi, sono stati aggiunti allo scope tutti i \texttt{worker} (Figura \ref{py:replica}).
 	
 			Quello che seguirà è l'implementazione del modello.	Attraverso l'inclusione di una variabile $global\_step$ (incrementata di uno ogni volta che il modello si aggiorna) si riesce a migliorare la tracciabilità, durante la fase di training. Inoltre, a causa della gestione interna dei threads da parte di TensorFlow, questo non rende lo script deterministico, ovvero, non ci si può aspettare gli stessi risultati dopo ogni esecuzione.
 			
@@ -263,18 +263,17 @@ with tf.Session() as sessione:
 				\caption{Instanza dell'oggetto supervisor.}
 				\label{py:supervisor}
 			\end{figure*}
-			La sessione invece viene ottenuta come segue:
+			La sessione viene ottenuta con il seguente comando:
 			\begin{center}
 				\scriptsize
 				\begin{verbatim}
-				with 
-				sv.prepare_or_wait_for_session(server.target)
-				as sess: # ...
+with sv.prepare_or_wait_for_session(server.target)
+  as sess:
 				\end{verbatim}
 			\end{center}			
 	
 		\subsection{Test}
-			Lo script in \texttt{Python} a nostra disposizione, è stato lievemente modificato per essere eseguibile sulle macchine del laboratorio informetico dell'ateneo, e per essere eseguito con la più aggiornata versione di \texttt{TensorFlow}. Lo script valuta i seguenti tre parametri:
+			Lo script in \texttt{Python} è stato sviluppato per essere eseguito sulle macchine del laboratorio informatico dell'ateneo utilizzando la versione attuale di \texttt{TensorFlow} (r1.0). Lo script valuta i seguenti tre parametri:
 			\begin{itemize}
 				\item accuratezza dei test, ovvero la probabilità con cui la rete possa dare la risposta giusta;
 				\item valore della funzione costo;
@@ -287,7 +286,7 @@ with tf.Session() as sessione:
 			\label{fig:accuracy-cost}
 		\end{figure*}
 			
-			Il primo test valutativo, è stato quello di addestrare la rete per $20$ epoche, usando un solo \texttt{worker}, con un risultato del $28$\% di accuratezza. L'accuratezza è incrementata dopo aver aggiunto alla rete altre due macchine settate come \texttt{worker}. Al variare del numero degli \texttt{worker}, l'andamento dell'accuratezza e della funzione costo si possono vedere nella Figura \ref{fig:accuracy-cost}, dove i costi sono normalizzati per essere compresi fra $0$ e $1$ esattamente come l'accuratezza. All'aumentare di ogni worker l'accuratezza incrementa anche se tale vantaggio tende a diminuire ogni volta. Non si può dire lo stesso della funzione costo che anche all'aggiunta del quinto \texttt{worker} finale mostra un miglioramento del $9$\%. Per quanto riguarda il tempo di esecuzione totale invece, inteso come tempo per far finire l'esecuzione a tutte le macchine, i risultati sono mostrati nella Figura \ref{fig:total-time}. I valori possono essere \textit{inquinati} dal fatto che le macchine sono \textit{general purpose} e per di più pubbliche. Non si può dire con certezza se all'aumentare di un solo \textit{worker} il tempo di esecuzione aumenterà o meno, quello che risulta evidente però è che c'è un certo \textit{overhead} quando le macchine aggiunte al processo di apprendimento sono più numerose.
+			Il primo test valutativo, è stato quello di addestrare la rete per $20$ epoche, usando un solo \texttt{worker}, con un risultato del $28$\% di accuratezza. L'accuratezza è incrementata dopo aver aggiunto alla rete altre due macchine settate come \texttt{worker}. In Figura \ref{fig:accuracy-cost} viene mostrato l'andamento dell'accuratezza e della funzione costo al variare del numero dei \texttt{worker}; i costi sono normalizzati per essere compresi fra $0$ e $1$ esattamente come l'accuratezza. All'aumentare di ogni worker l'accuratezza incrementa, anche se tale vantaggio tende a diminuire ogni volta. Non si può dire lo stesso della funzione costo che anche all'aggiunta del quinto \texttt{worker} finale mostra un miglioramento del $9$\%. Per quanto riguarda il tempo di esecuzione totale invece, inteso come tempo a esecuzione conclusa di tutte le macchine, i risultati sono mostrati nella Figura \ref{fig:total-time}. I valori possono essere \textit{inquinati} dal fatto che le macchine sono \textit{general purpose} e per di più pubbliche. Non si può dire con certezza se all'aumentare di un solo \textit{worker} il tempo di esecuzione aumenterà o meno, quello che risulta evidente è la presenza di un \textit{overhead} quando più macchine vengono aggiunte al processo di apprendimento.
 			\begin{figure*}[th!]
 				\centering
 				\includegraphics[scale=.95]{img/total-time.png}
