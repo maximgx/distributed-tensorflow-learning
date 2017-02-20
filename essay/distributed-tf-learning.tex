@@ -198,9 +198,9 @@ with tf.Session() as sessione:
 				\begin{itemize}
 					\item esecuzione parziale del grafo, dove l'utente sceglie quali nodi eseguire;
 					\item vincoli di collocamento di un nodo, tramite i quali l'utente costringe un nodo a essere eseguito su un particolare device;
-					\item controllo del flusso di esecuzione, che è un insieme di primitive che permettono di manipolare l'esecuzione del grafo (costrutti \texttt{if}, cicli \texttt{while}, \texttt{Switch}, \texttt{Merge}, etc)
-					\item nodi \textit{feed}, che fungono da fonte di tensors per altri nodi 
-					\item \texttt{queue} che permettono l'esecuzione asincrona del grafo
+					\item controllo del flusso di esecuzione, che è un insieme di primitive che permettono di manipolare l'esecuzione del grafo (costrutti \texttt{if}, cicli \texttt{while}, \texttt{Switch}, \texttt{Merge}, etc);
+					\item nodi \textit{feed}, che fungono da fonte di tensors per altri nodi;
+					\item \texttt{queue} che permettono l'esecuzione asincrona del grafo;
 					\item\texttt{containers} per gestire gli stati all'interno del grafo, e altre.
 				\end{itemize}
 				Per approfondimenti si può vedere \cite{tf}.
@@ -257,7 +257,7 @@ with tf.Session() as sessione:
 	
 			Quello che seguirà è l'implementazione del modello.	Attraverso l'inclusione di una variabile $global\_step$ (incrementata di uno ogni volta che il modello si aggiorna) si riesce a migliorare la tracciabilità, durante la fase di training. Inoltre, a causa della gestione interna dei threads da parte di TensorFlow, questo non rende lo script deterministico, ovvero, non ci si può aspettare gli stessi risultati dopo ogni esecuzione.
 			
-			Detto questo, abbiamo bisogno di ottenere la sessione al fine di eseguire i nostri cicli di training in un sistema distribuito. Risulta quindi obbligatorio settare una macchina che prenda la posizione di \textbf{chief} (capo). Il \textit{chief} è un \texttt{worker} (nel nostro caso task 0) il quale gestisce e monitora il resto del cluster. La sessione quindi viene gestita dal \textit{chief}, attraverso il metodo \texttt{Supervisor} della classe train (Figura \ref{py:supervisor}).
+			Detto questo, abbiamo bisogno di ottenere la sessione al fine di eseguire i nostri cicli di training in un sistema distribuito. Risulta quindi obbligatorio settare una macchina che prenda la posizione di \textbf{chief} (capo). Il \textit{chief} è un \texttt{worker} (nel nostro caso task 0) il quale gestisce e monitora il resto del cluster. La sessione quindi viene gestita dallo \textit{chief}, attraverso il metodo \texttt{Supervisor} della classe train (Figura \ref{py:supervisor}).
 			\begin{figure*}
 				\pythonexternal{code/supervisor.py}
 				\caption{Instanza dell'oggetto supervisor.}
