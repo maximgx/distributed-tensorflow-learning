@@ -10,6 +10,7 @@
 \usepackage[svgnames]{xcolor}
 \usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption}
 \usepackage{booktabs}
+\usepackage{hyperref}
 \usepackage{fix-cm}
 \usepackage[margin=1in]{geometry}
 \usepackage[utf8]{inputenc}
@@ -206,7 +207,7 @@ with tf.Session() as sessione:
 				
 				In questo paragrafo ci soffermeremo con più attenzione sul controllo del flusso, in quanto \textbf{cruciale in ambiente distribuito}. Dal momento che viene usato un meccanismo importante di coordinazione distribuita. Questo nasce dalla necessità di gestire l'esecuzione \textit{loop} che riguardano nodi assegnati a differenti device o macchine: il loro stato va infatti in qualche modo mantenuto. La soluzione che propone TensorFlow è quella della \textit{riscrittura del grafo}: durante il partizionamento dei nodi (Figura \ref{paragaph:partition}), un nodo di controllo viene aggiunto per ogni sottografo. I nodi di controllo implementano una \textit{macchina a stati} che orchestra lo start e la fine di ogni iterazione, oltre alla terminazione del loop stesso. Per ogni iterazione, il device che possiede il predicato della terminazione del loop, spedisce un messaggio di controllo verso tutti gli altri device coinvolti. Questi accorgimenti sono necessari anche per computare il gradiente precedentemente visto, in quanto è necessario sapere, per esempio, quale ramo di un \textit{if-then-else}	è stato imboccato per arrivare a $C$, oppure quante iterazioni sono state fatte da un particolare loop o quali erano i valori intermedi.
 		
-		\section{Forme di Parallelismo}
+		\section{Forme di Parallelismo}\label{sec:parallel}
 			Si supponga di avere un modello allenato tramite calcolo di gradiente stocastico. Una semplice tecnica per velocizzare \texttt{SGD} (Stochastic Gradient Descent) è quella di parallelizzare la computazione del gradiente, spezzando ulteriormente i batch. 
 			\begin{figure}[H]
 				\centering
@@ -225,70 +226,84 @@ with tf.Session() as sessione:
 		Il sistema presenta alcuni accorgimenti per incrementare le performance e la gestione delle risorse. TensorFlow è in grado di individuare pezzi di grafo ridondanti che fanno "la stessa cosa" ed eliminarli, preservando la semantica del programma. Essa può effettuare un controllo diretto dell'utilizzo della memoria e l'attivazione dei nodi di tipo \textit{recv} (Figura \ref{paragraph:communication}), secondo politiche \texttt{as-soon-as-possible} oppure \texttt{as-late-as-possible} ed infine implementa kernel non bloccanti e introduce librerie ottimizzate per lo sviluppo di kernel.
 		
 		Viene offerto un insieme di strumenti chiamato \texttt{TensorFlowBoard}. Esso permette agli utenti di esplorare graficamente la struttura del grafo di computazione, l'analisi del suo comportamento e aiuta la visualizzazione degli stati interni e traccia le performance.
+				
+		\section{Apprendimento distribuito: test empirici}		
+		Dopo svariate prove con la libreria, ci siamo posti come obiettivo, di parallelizzare la fase di training della rete, mettendo a disposizione le risorse di diverse macchine, un numero variabile di \texttt{worker} e una per gestire il tutto, settata come \texttt{parameter server}. Facendo uso di una rete sigmoidea con una bassa frequenza di apprendimento, sono state misurate le diverse performance sui dataset \textit{MNIST}. L'obiettivo non è quello di ottenere un'alta accuratezza dopo la fase di training, ma apprendere le funzionalità della libreria in ambiente distribuito e valutare i risultati. I test riguarderanno la parallelizzazione dei dati come descritto nella Sezione \ref{sec:parallel}.
 		
-		\section{Apprendimento distribuito: test empirici}
+		\subsection{Addestramento distribuito}
+			È stato visto che esistono differenti modi per addestrare una rete in ambienti distribuiti. L'approccio più semplice è quello di condividere tutto il modello dei parametri con tutti i \texttt{worker} mentre i dati vengono parallelizzati e il gradiente viene aggiornato. In un modello \textbf{sincrono}, alcuni gruppi vengono processati nello stesso lasso di tempo. Una volta che tutti i \texttt{worker} all'intero della rete hanno processato e terminato la fase di training, viene effettuata la media del tempo impiegato e vengono applicati gli aggiornamenti dei parametri, una sola volta. Invece, in un modello \textbf{asincrono}, ogni \texttt{worker} aggiornerà il modello dei parametri una volta che ha terminato la propria fase, senza aspettare la fine dell'esecuzione degli altri. Durante la fase di prova, è stato usato un modello sincrono, poiché la regolazione dei parametri per il modello asincrono risultava molto complessa.
+			\begin{figure*}[th!]
+				\pythonexternal{code/cluster.py}
+				\caption{Specifiche per il cluster.}
+				\label{py:clustercode}
+			\end{figure*}
+			\begin{figure*}[th!]
+				\pythonexternal{code/inputflags.py}
+				\caption{Specifiche e impostazione dei parametri per il cluster.}
+				\label{py:inputflags}
+			\end{figure*}
+			\begin{figure*}[th!]
+				\pythonexternal{code/replica.py}
+				\caption{Replica del modello e aggiunta allo scope dei \texttt{worker}.}
+				\label{py:replica}
+			\end{figure*}
 		
-		\section{Appunti Bart}		
-		Dopo svariate prove con la libreria, ci siamo posti come obiettivo, di parallelizzare la fase di training in modo asincrono, mettendo a disposizione le risorse di tre macchine, due impostate come worker e una per gestire il tutto, settata come parameter server. Facendo uso di una rete sigmoidea con una bassa frequenza di apprendimento, abbiamo misurato le diverse performance su MNIST. L'obiettivo non è stato quello di ottenere un'alta accuratezza dopo la fase di training, ma apprendere le funzionalità della libreria in ambiente distribuito.
-		Il primo test valutativo, è stato quello di addestrare la rete per 20 epoche, usando un solo worker, con un risultato del 29\% di accuratezza. L'accuratezza è incrementata quando abbiamo aggiunto alla rete altre due macchine settate come worker.
-			\subsection{Addestramento distribuito}
-				Esistono differenti modi per addestrare una rete in ambienti distribuiti. L'approccio più semplice è quello di condividere tutto il modello dei parametri con tutti i worker mentre i dati vengono parallelizzati e il gradiente viene aggiornato. In un modello \textbf{sincrono}, alcuni gruppi vengono processati nello stesso lasso di tempo. Una volta che tutti i worker all'intero della rete hanno processato e terminato la fase di training, viene effettuata la media del tempo impiegato e vengono applicati gli aggiornamenti dei parametri, una sola volta. Invece, in un modello \textbf{asincrono}, ogni worker aggiornerà il modello dei parametri una volta che ha terminato la propria fase, senza aspettare la fine dell'esecuzione degli altri. Durante la fase di prova, abbiamo usato un modello sincrono, poiché la regolazione dei parametri per il modello asincrono risultava molto complessa.
-				\begin{figure}[H]
-					\centering
-					\includegraphics[scale=.55]{img/sync-async.png}
-					\caption{Fase di training parallelizzata: sincrono e asincrono.}
-					\label{fig:sync-async}
-				\end{figure}
-			\subsection{Implementazione}
-				E' di fondamentale importanza che ogni macchina all'interno del cluster conosca se stessa e le altre che ne fanno parte. Lo script è stato implementato in modo tale che la fase di training non parta finché tutte le macchine all'interno del  cluster siano online. Le specifiche del cluster sono le stesse per ogni macchina: costituite da parameter server e worker. Mentre il parameter server mantiene solamente i parametri condivisi, i worker effettuano i calcoli per il grafo.
-				\begin{figure*}
-					\pythonexternal{code/cluster.py}
-					\caption{Specifiche per il cluster.}
-					\label{py:clustercode}
-				\end{figure*}
-				Ps e worker sono chiamati \textbf{jobs}, i quali fondamentalmente sono contenitori per uno o più \textbf{task}. Il task è il processo che il worker elaborerà durante l'esecuzione. Volendo è possibile aggiungere più task sulla stessa macchina. Questo potrebbe aver senso in una macchina con più acceleratori di grafica (GPU): in questa ottica, tutti i task avranno un grafo completo del modello.
-				Se volessimo parallelizzare il modello anziché i dati, dovremmo cambiare il comportamento di ogni task, e più nello specifico le operazioni che deve eseguire ognuno di essi.
-				Nella parte di codice in Figura \ref{py:inputflags}, andiamo a inizializzare le macchine per l'esecuzione. 
-				\begin{figure*}
-					\pythonexternal{code/inputflags.py}
-					\caption{Specifiche e impostazione dei parametri per il cluster.}
-					\label{py:inputflags}
-				\end{figure*}
-				Per assicurarsi, che venga eseguito il task corretto, al primo avvio dello script (settato come worker), \textit{pc-02} sarà di default il worker con il $task\_index = 0$. Nella parte di codice in Figura  \ref{py:inputflags} è mostrata la configurazione dei parametri e il caricamento dei dati MNIST.
-				Se lo script viene avviato come parameters server, viene eseguita la funzione \textit{server.join()}, in modo che si unisca al cluster.
-				Quello che segue sono le configurazioni delle variabili e la definizione della computazione che ogni worker deve eseguire.
-				Dal momento in cui si è scelto di computare l'intero modello su tutti i dispositivi, abbiamo aggiunto allo scope tutti i worker.
-				\begin{figure*}
-					\pythonexternal{code/replica.py}
-					\caption{Replica del modello e aggiunta allo scope dei worker.}
-					\label{py:replica}
-				\end{figure*}
-				Quello che seguirà è l'implementazione del modello. 
-				Attraverso l'inclusione di una variabile $global\_step$ (incrementata di uno ogni volta che il modello si aggiorna) riusciamo a migliorare la tracciabilità, durante la fase di training. Inoltre, a causa della gestione interna dei threads da parte di TensorFlow, questo non rende lo script deterministico, ovvero, non ci si può aspettare gli stessi risultati dopo ogni esecuzione.
-				Detto questo, abbiamo bisogno di ottenere la sessione al fine di eseguire i nostri cicli di training in un sistema distribuito. Risulta quindi obbligatorio settare una macchina che prenda la posizione di \textbf{chief} (capo). Il \textit{chief} è un worker (nel nostro caso task 0) il quale gestisce e monitora il resto del cluster. La sessione quindi viene gestita dal \textit{chief}, attraverso il metodo Supervisor della classe train (Figura \ref{py:supervisor}).
-				\begin{figure*}
-					\pythonexternal{code/supervisor.py}
-					\caption{Instanza dell'oggetto supervisor.}
-					\label{py:supervisor}
-				\end{figure*}
-				Abbiamo ottenuto la sessione con il comando seguente: 
-				\begin{center}
+		\subsection{Implementazione}
+			È di fondamentale importanza che ogni macchina all'interno del cluster conosca se stessa e le altre che ne fanno parte. Lo script è stato implementato in modo tale che la fase di training non parta finché tutte le macchine all'interno del cluster siano online. Le specifiche del cluster (Figura \ref{py:clustercode}) sono le stesse per ogni macchina: costituite da \texttt{parameter server} e \texttt{worker}. Mentre il \texttt{parameter server} mantiene solamente i parametri condivisi, i \texttt{worker} effettuano i calcoli per il grafo. \texttt{worker} e \texttt{ps} sono chiamati \textbf{jobs}, i quali fondamentalmente sono contenitori per uno o più \textbf{task}. Il task è il processo che il \texttt{worker} elaborerà durante l'esecuzione. Volendo è possibile aggiungere più task sulla stessa macchina. Questo potrebbe aver senso in una macchina con più \texttt{GPU}: in questa ottica, tutti i task avranno un grafo completo del modello.
+			
+			Se volessimo parallelizzare il modello anziché i dati, dovremmo cambiare il comportamento di ogni task, e più nello specifico le operazioni che deve eseguire ognuno di essi. Nella parte di codice in Figura \ref{py:inputflags}, si vanno a inizializzare le macchine per l'esecuzione. 
+			
+			Per assicurarsi, che venga eseguito il task corretto, al primo avvio dello script (settato come \texttt{worker}), \textit{altoum} sarà di default il \texttt{worker} con il $task\_index = 0$. Se lo script viene avviato come parameters server, viene eseguita la funzione \textit{server.join()}, in modo che si unisca al cluster. Quello che segue sono le configurazioni delle variabili e la definizione della computazione che ogni \texttt{worker} deve eseguire. Dal momento in cui si è scelto di computare l'intero modello su tutti i dispositivi, sono stati aggiunti allo scope tutti gli \texttt{worker} (\ref{py:replica}).
+	
+			Quello che seguirà è l'implementazione del modello.	Attraverso l'inclusione di una variabile $global\_step$ (incrementata di uno ogni volta che il modello si aggiorna) si riesce a migliorare la tracciabilità, durante la fase di training. Inoltre, a causa della gestione interna dei threads da parte di TensorFlow, questo non rende lo script deterministico, ovvero, non ci si può aspettare gli stessi risultati dopo ogni esecuzione.
+			
+			Detto questo, abbiamo bisogno di ottenere la sessione al fine di eseguire i nostri cicli di training in un sistema distribuito. Risulta quindi obbligatorio settare una macchina che prenda la posizione di \textbf{chief} (capo). Il \textit{chief} è un \texttt{worker} (nel nostro caso task 0) il quale gestisce e monitora il resto del cluster. La sessione quindi viene gestita dal \textit{chief}, attraverso il metodo \texttt{Supervisor} della classe train (Figura \ref{py:supervisor}).
+			\begin{figure*}
+				\pythonexternal{code/supervisor.py}
+				\caption{Instanza dell'oggetto supervisor.}
+				\label{py:supervisor}
+			\end{figure*}
+			La sessione invece viene ottenuta come segue:
+			\begin{center}
 				\scriptsize
-with sv.prepare\_or\_wait\_for\_session(server.target) as sess:
-				\end{center}
-				
-				
-				
-
-
-
+				\begin{verbatim}
+				with 
+				sv.prepare_or_wait_for_session(server.target)
+				as sess: # ...
+				\end{verbatim}
+			\end{center}			
+	
+		\subsection{Test}
+			Lo script in \texttt{Python} a nostra disposizione, è stato lievemente modificato per essere eseguibile sulle macchine del laboratorio informetico dell'ateneo, e per essere eseguito con la più aggiornata versione di \texttt{TensorFlow}. Lo script valuta i seguenti tre parametri:
+			\begin{itemize}
+				\item accuratezza dei test, ovvero la probabilità con cui la rete possa dare la risposta giusta;
+				\item valore della funzione costo;
+				\item tempo totale impiegato da tutte le macchine.
+			\end{itemize}
+		\begin{figure*}[th]
+			\centering
+			\includegraphics[scale=.95]{img/accuracy-cost.png}
+			\caption{Andamento dell'accuratezza dei test e della funzione costo al variare del numero delle macchine nel cluster; i valori della funzione costo sono normalizzati per essere in scala.}
+			\label{fig:accuracy-cost}
+		\end{figure*}
+			
+			Il primo test valutativo, è stato quello di addestrare la rete per $20$ epoche, usando un solo \texttt{worker}, con un risultato del $28$\% di accuratezza. L'accuratezza è incrementata dopo aver aggiunto alla rete altre due macchine settate come \texttt{worker}. Al variare del numero degli \texttt{worker}, l'andamento dell'accuratezza e della funzione costo si possono vedere nella Figura \ref{fig:accuracy-cost}, dove i costi sono normalizzati per essere compresi fra $0$ e $1$ esattamente come l'accuratezza. All'aumentare di ogni worker l'accuratezza incrementa anche se tale vantaggio tende a diminuire ogni volta. Non si può dire lo stesso della funzione costo che anche all'aggiunta del quinto \texttt{worker} finale mostra un miglioramento del $9$\%. Per quanto riguarda il tempo di esecuzione totale invece, inteso come tempo per far finire l'esecuzione a tutte le macchine, i risultati sono mostrati nella Figura \ref{fig:total-time}. I valori possono essere \textit{inquinati} dal fatto che le macchine sono \textit{general purpose} e per di più pubbliche. Non si può dire con certezza se all'aumentare di un solo \textit{worker} il tempo di esecuzione aumenterà o meno, quello che risulta evidente però è che c'è un certo \textit{overhead} quando le macchine aggiunte al processo di apprendimento sono più numerose.
+			\begin{figure*}[th!]
+				\centering
+				\includegraphics[scale=.95]{img/total-time.png}
+				\caption{Tempo richiesto per finire tutti i \texttt{jobs} nella rete, al variare del numero delle macchine.}
+				\label{fig:total-time}
+			\end{figure*}
+			
 		\begin{thebibliography}{9}
 			\bibitem{tf}
 			Google Research,
 			\emph{TensorFlow: Large-Scale Machine Learning on Heterogeneous Distributed Systems},
 			Preliminary White Paper,
 			2015.
+			\bibitem{tfguide}
+			TensorFlow,
+			\emph{\href{https://www.tensorflow.org/versions/r0.10/how_tos/distributed/}{How To: Distributed TensorFlow}}
 		\end{thebibliography}
 	\end{multicols}
-
 \end{document}

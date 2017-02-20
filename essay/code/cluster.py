@@ -1,6 +1,9 @@
-parameter_servers = ["pc-01:2222"]
-workers = [ "pc-02:2222", 
-            "pc-03:2222",
-            "pc-04:2222"]
+workers = ["altoum:2222",
+           "edmondo:2222",
+           "moschina:2222",
+           "dancairo:2222",
+           "remendado:2222",]
+parameter_servers = ["doncurzio:2222"]
+
 cluster = tf.train.ClusterSpec({"ps":parameter_servers,
-				"worker":workers})
+                                "worker":workers})
