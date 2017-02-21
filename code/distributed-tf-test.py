@@ -1,18 +1,3 @@
-'''
-Distributed Tensorflow 0.8.0 example of using data parallelism and share model parameters.
-Trains a simple sigmoid neural network on mnist for 20 epochs on three machines using one parameter server.
-
-Change the hardcoded host urls below with your own hosts.
-Run like this:
-
-pc-01$ python example.py --job_name="ps" --task_index=0
-pc-02$ python example.py --job_name="worker" --task_index=0
-pc-03$ python example.py --job_name="worker" --task_index=1
-pc-04$ python example.py --job_name="worker" --task_index=2
-
-More details here: ischlag.github.io
-'''
-
 from __future__ import print_function
 
 import tensorflow as tf
@@ -30,9 +15,7 @@ tf.app.flags.DEFINE_integer("task_index", 0, "Index of task within the job")
 FLAGS = tf.app.flags.FLAGS
 
 # start a server for a specific task
-server = tf.train.Server(cluster,
-							job_name=FLAGS.job_name,
-							task_index=FLAGS.task_index)
+server = tf.train.Server(cluster, job_name=FLAGS.job_name, task_index=FLAGS.task_index)
 
 # config
 batch_size = 100
@@ -40,20 +23,19 @@ learning_rate = 0.0005
 training_epochs = 20
 logs_path = "/tmp/mnist/1"
 
-# load mnist data set
+# caricamento
 from tensorflow.examples.tutorials.mnist import input_data
 mnist = input_data.read_data_sets('MNIST_data', one_hot=True)
 
 if FLAGS.job_name == "ps":
   server.join()
 elif FLAGS.job_name == "worker":
-
-	# Between-graph replication
+	# between-graph replication
 	with tf.device(tf.train.replica_device_setter(
 		worker_device="/job:worker/task:%d" % FLAGS.task_index,
 		cluster=cluster)):
 
-		# count the number of updates
+		''' Conteggio numero di aggiornamenti '''
 		global_step = tf.get_variable('global_step', [],
 										initializer = tf.constant_initializer(0),
 										trainable = False)
@@ -65,7 +47,7 @@ elif FLAGS.job_name == "worker":
 		  # target 10 output classes
 		  y_ = tf.placeholder(tf.float32, shape=[None, 10], name="y-input")
 
-		# model parameters will change during training so we use tf.Variable
+		''' Variabili che immagazzinano parametri del modello '''
 		tf.set_random_seed(1)
 		with tf.name_scope("weights"):
 			W1 = tf.Variable(tf.random_normal([784, 100]))
@@ -76,7 +58,7 @@ elif FLAGS.job_name == "worker":
 			b1 = tf.Variable(tf.zeros([100]))
 			b2 = tf.Variable(tf.zeros([10]))
 
-		# implement model
+		''' Modello '''
 		with tf.name_scope("softmax"):
 			# y is our prediction
 			z2 = tf.add(tf.matmul(x,W1),b1)
@@ -84,64 +66,45 @@ elif FLAGS.job_name == "worker":
 			z3 = tf.add(tf.matmul(a2,W2),b2)
 			y  = tf.nn.softmax(z3)
 
-		# specify cost function
+		''' Funzione Costo '''
 		with tf.name_scope('cross_entropy'):
-			# this is our cost
 			cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y),
 											reduction_indices=[1]))
-
-		# specify optimizer
+        
+        # specify optimizer
 		with tf.name_scope('train'):
 			# optimizer is an "operation" which we can execute in a session
 			grad_op = tf.train.GradientDescentOptimizer(learning_rate)
-			'''
-			rep_op = tf.train.SyncReplicasOptimizer(grad_op,
-											replicas_to_aggregate=len(workers),
-											replica_id=FLAGS.task_index,
-											total_num_replicas=len(workers),
-											use_locking=True
-											)
- 			train_op = rep_op.minimize(cross_entropy, global_step=global_step)
- 			'''
 			train_op = grad_op.minimize(cross_entropy, global_step=global_step)
-
-		'''
-		init_token_op = rep_op.get_init_tokens_op()
-		chief_queue_runner = rep_op.get_chief_queue_runner()
-		'''
-
+			
+			''' Accuratezza '''
 		with tf.name_scope('Accuracy'):
 			# accuracy
 			correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
 			accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-
-		# create a summary for our cost and accuracy
+			
 		tf.summary.scalar("cost", cross_entropy)
 		tf.summary.scalar("accuracy", accuracy)
 
-		# merge all summaries into a single "operation" which we can execute in a session
-		# old version: summary_op = tf.merge_all_summaries()
+		''' Merge dei valori Costo e Accuratezza '''
+		
+		# DEPRECATO: summary_op = tf.merge_all_summaries()
+		
 		summary_op = tf.summary.merge_all()
-		# old version: tf.initialize_all_variables()
+		
+		# DEPRECATO: tf.initialize_all_variables()
+		
 		init_op = tf.global_variables_initializer()
 		print("Variables initialized...")
 
 	sv = tf.train.Supervisor(logdir = None, is_chief = (FLAGS.task_index == 0),
 								global_step = global_step, init_op = init_op)
-
+    
 	begin_time = time.time()
 	frequency = 100
 	with sv.prepare_or_wait_for_session(server.target) as sess:
-		'''
-		# is chief
-		if FLAGS.task_index == 0:
-			sv.start_queue_runners(sess, [chief_queue_runner])
-			sess.run(init_token_op)
-		'''
-		# create log writer object (this will log on every machine)
-		# writer = tf.train.SummaryWriter(logs_path, graph=tf.get_default_graph())
 		writer = tf.summary.FileWriter(logs_path, graph = tf.get_default_graph())
-		# perform training cycles
+		''' Cicli di training '''
 		start_time = time.time()
 		for epoch in range(training_epochs):
 
@@ -169,7 +132,6 @@ elif FLAGS.job_name == "worker":
 						" AvgTime: %3.2fms" % float(elapsed_time*1000/frequency))
 					count = 0
 
-		print("=====================")
 		print("Test Accuracy: %2.2f" % sess.run(accuracy,
 						feed_dict={x: mnist.test.images, y_: mnist.test.labels}))
 		print("Total Time: %3.2fs" % float(time.time() - begin_time))

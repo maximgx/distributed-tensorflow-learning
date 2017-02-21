@@ -293,6 +293,15 @@ with sv.prepare_or_wait_for_session(server.target)
 				\caption{Tempo richiesto per finire tutti i \texttt{jobs} nella rete, al variare del numero delle macchine.}
 				\label{fig:total-time}
 			\end{figure*}
+		
+		\section{Conclusioni}
+			Data la libreria TensorFlow per esprimere algoritmi in ambito Machine Learning, si è riusciti ad avere un panorama sulle sue principali caratteristiche. Il suo modello astratto basato su grafi e le primitive implementate risultano di immediata comprensione già dopo la prima lettura, e questo è ciò che serve in un ambito come quello delle reti neurali non proprio semplice. Persino il calcolo del gradiente risulta di facile comprensione. Sono stati poi ispezionati ed esaltati gli aspetti che riguardano i sistemi distribuiti e le varie forme di parallelismo, e sono state accennate alcune caratteristiche secondarie.
+			
+			Per quanto riguarda i \textbf{test} da noi fatti si può dire quanto segue. TensorFlow è ancora un software in forte evoluzione, cioè che cambia rapidamente, online infatti si riescono a trovare script creati solo qualche mese fa che risultano già obsoleti. Essendo che le nuove versioni di TensorFlow cambiano la gerarchia delle classi al suo interno, e anche i tipi di metodi, si doveva prestare attenzione a come viene costruita la rete neurale per risolvere il problema, seppur \textit{"semplice"}. Questo può rivelarsi demotivante per gli utenti che non sanno come è fatto l'apprendimento automatico sotto il cofano.
+			
+			Una volta ottenuto un semplice modello \textit{inefficiente} ma dimostrativo per i nostri scopi, che funzionasse in locale, è stato testato il parallelismo sui dati su un numero variabile di macchine di laboratorio. Si è visto che all'aumentare delle macchine la funzione costo diminuisce e aumenta l'accuratezza, anche se questa migliora con un andamento sempre meno significativo. I tempi di esecuzione totale invece tendono ad aumentare e ciò è dovuto probabilmente, a un overhead di scambio dei messaggi.
+			
+			Al momento non esistono librerie per il Machine Learning che supportino l'apprendimento distribuito in questo modo, a nostro parere TensorFlow sarà ancora per molto un software fondamentale in questo settore.
 			
 		\begin{thebibliography}{9}
 			\bibitem{tf}
